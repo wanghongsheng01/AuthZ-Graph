@@ -1,0 +1,13 @@
+# erp_replay derived_from=cdb396bf191d trace_pairs=21678
+# closure_mean=5.1 closure_max=25 hubs_mean=4.8 (sample 1000 users)
+# build=erp-adb48fff2bdd defer_B=default(B) sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=data/erp n=7816 m=166212 users=943 res=6420 updates=20978 qpu=10 W=100 B=1000 K=64
+# queries=209780 truth_allow_rate=0.8966
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	0.4	0.943	0.942	1.992	0.03	0.04	0.13	4	0.44	0	0	209780	masks_per_entry_mean=1.000000;masks_per_entry_max=1;max_coef_log2=0.000000;ack_p99=0.126007;probe_frac=0.017004;label_entries=455;prop_nodes=20;prop_trips=20;fa_targeted=0
+BFS	0.0	0.803	0.787	1.175	0.02	0.00	0.04	0	0.00	0	0	209780	;fa_targeted=0
+SV-DTC	0.5	0.550	0.533	0.904	0.36	0.04	16.21	66	0.07	2256	9672	209780	fallback_frac=0.998179;recomputes=319;fa_cond=0;fa_deny=2098;fa_stale=158;fa_targeted=401
+SV-DTC-deg5	0.6	0.528	0.512	0.867	0.40	0.04	20.75	90	0.07	2256	9672	209780	fallback_frac=0.976890;recomputes=319;fa_cond=0;fa_deny=2098;fa_stale=158;fa_targeted=401
+SV-DTC-deg64	0.7	0.660	0.646	1.025	2.45	0.04	152.25	426	0.95	2256	9672	209780	fallback_frac=0.920598;recomputes=319;fa_cond=0;fa_deny=2098;fa_stale=158;fa_targeted=401
+# who: AZX mean 14.3 us p99 36.1 | BFS mean 11.2 us p99 22.7
+# what: AZX mean 8.9 us p99 21.5 | BFS mean 7.1 us p99 15.0 | who/what mismatches 0

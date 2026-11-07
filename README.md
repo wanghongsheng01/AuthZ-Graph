@@ -15,6 +15,7 @@ This repository contains the prototype (FLIX), all baselines, the workload gener
 | `code/paper_facts.py`, `code/paper_fig1.py` | Turn raw outputs into the paper's numbers, tables and figures. They refuse outputs whose build hash differs. |
 | `scripts/parse_amzn.py` | Streams the UCI Amazon archive without extracting it (the wide CSV is 4.8 GB). |
 | `results/rev2/` | Raw outputs behind every table in the paper. Each file starts with `# build=cdb396bf191d` (`-wide` for English Wikipedia). `results/rev2/meta/` holds the dataset sizes and the revocation counts of the update streams, so that the numbers can be regenerated without the datasets. |
+| `results/erp/`, `code/make_erp_replay.py` | Raw outputs of the production ERP case study (Section VI-H). The ERP export is de-identified enterprise data and is not released, nor is the script that builds the graph from it. The replay driver `code/erp_replay.cpp` is generated from the unchanged `code/authz.cpp` by `make_erp_replay.py`; its only change is that checks other than new-enemy probes are sampled from a page-access trace (`qtrace.bin`). |
 | `results/sql/`, `results/server/meta/`, `results/real/` | The SQLite cross-check of the pilot runs (stated as such in the paper) and the size metadata of the server-scale and English Wikipedia graphs. |
 
 ## Build
@@ -29,7 +30,7 @@ The `_wide` build uses exact 128-bit path counts. It is needed for the English W
 
 ## Data
 
-All datasets are public or synthetic.
+All datasets except the ERP case study are public or synthetic.
 
 - **SNAP** ground-truth communities from https://snap.stanford.edu/data/: `com-dblp`, `com-youtube`, `com-lj`, `com-orkut` and `com-friendster` (`*.all.cmty.txt.gz`).
 - **UCI Amazon Access Samples**, https://archive.ics.uci.edu/dataset/216 (DOI 10.24432/C5JW2K, CC BY 4.0).
@@ -70,10 +71,10 @@ Every check is compared against the online oracle. The `false_allow` and `false_
 
 ```bash
 pip install numpy matplotlib
-AUTHZ_RESULTS=results/rev2 python3 code/paper_facts.py
+AUTHZ_RESULTS=results/rev2 AUTHZ_ERP_RESULTS=results/erp python3 code/paper_facts.py
 ```
 
-This writes `paper/numbers.tex` (301 macros), `paper/tables/*.tex` and `paper/figs/*.pdf` from `results/rev2/` alone; no dataset is needed. `paper/numbers_sources.txt` lists the raw file behind each macro.
+This writes `paper/numbers.tex` (all macros, including those of the ERP case study), `paper/tables/*.tex` and `paper/figs/*.pdf` from `results/rev2/` alone; no dataset is needed. `paper/numbers_sources.txt` lists the raw file behind each macro.
 
 ## Hardware used
 
