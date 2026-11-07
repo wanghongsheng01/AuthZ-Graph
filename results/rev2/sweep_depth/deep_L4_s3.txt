@@ -1,0 +1,15 @@
+# closure_mean=26.1 closure_max=55 hubs_mean=4.9 (sample 1000 users)
+# build=cdb396bf191d defer_B=default(B) sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=./data/deep_L4 n=121020 m=188750 users=100000 res=12020 updates=2000 qpu=10 W=100 B=1000 K=64
+# queries=20000 truth_allow_rate=0.0795
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	6.6	0.340	0.331	0.534	1.05	0.15	14.69	53	7.33	0	0	20000	masks_per_entry_mean=1.000000;masks_per_entry_max=1;max_coef_log2=1.000000;ack_p99=14.687500;probe_frac=0.000000;label_entries=12403;prop_nodes=3349;prop_trips=5939;fa_targeted=0
+BFS	0.0	0.544	0.534	0.773	0.05	0.04	0.06	8	0.00	0	0	20000	;fa_targeted=0
+CLOSURE	12.0	0.448	0.438	0.631	1.05	0.09	13.99	41	10.16	0	0	20000	masks_per_entry_mean=1.000000;masks_per_entry_max=1;max_coef_log2=1.000000;ack_p99=13.991211;probe_frac=0.000000;label_entries=59621;prop_nodes=3124;prop_trips=6257;fa_targeted=0
+# who: AZX mean 317.8 us p99 691.2 | BFS mean 161.0 us p99 443.8
+# what: AZX mean 4.1 us p99 23.2 | BFS mean 5.5 us p99 19.0 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 54556
+# exit=0
+# cmd: ./code/authz ./data/deep_L4 AZX,BFS,CLOSURE 10 2000 3 100 1000 64 env={}
+# wall_s: 0.3

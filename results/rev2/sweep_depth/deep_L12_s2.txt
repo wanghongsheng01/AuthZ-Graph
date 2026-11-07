@@ -1,0 +1,15 @@
+# closure_mean=3423.0 closure_max=4284 hubs_mean=391.0 (sample 1000 users)
+# build=cdb396bf191d defer_B=default(B) sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=./data/deep_L12 n=137020 m=221565 users=100000 res=12020 updates=2000 qpu=10 W=100 B=1000 K=64
+# queries=20000 truth_allow_rate=0.8344
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	213.4	4.250	4.242	5.783	223.23	0.25	4738.80	17076	118.45	0	0	20000	masks_per_entry_mean=1.041201;masks_per_entry_max=6;max_coef_log2=5.000000;ack_p99=4738.799316;probe_frac=0.988750;label_entries=1622450;prop_nodes=325141;prop_trips=674124;fa_targeted=0
+BFS	0.0	58.673	59.028	70.008	0.05	0.06	0.14	1	0.00	0	0	20000	;fa_targeted=0
+CLOSURE	1997.3	4.701	4.693	6.270	1007.39	0.19	23184.64	88115	835.47	0	0	20000	masks_per_entry_mean=1.005174;masks_per_entry_max=6;max_coef_log2=5.000000;ack_p99=23184.636719;probe_frac=0.988950;label_entries=12919395;prop_nodes=254724;prop_trips=779599;fa_targeted=0
+# who: AZX mean 17142.8 us p99 30788.5 | BFS mean 9697.2 us p99 57563.4
+# what: AZX mean 224.0 us p99 266.0 | BFS mean 851.4 us p99 1066.9 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 1129152
+# exit=0
+# cmd: ./code/authz ./data/deep_L12 AZX,BFS,CLOSURE 10 2000 2 100 1000 64 env={}
+# wall_s: 16.4

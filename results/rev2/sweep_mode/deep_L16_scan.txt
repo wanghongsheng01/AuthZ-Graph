@@ -1,0 +1,14 @@
+# closure_mean=9578.0 closure_max=10594 hubs_mean=764.0 (sample 1000 users)
+# build=cdb396bf191d defer_B=default(B) sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=./data/deep_L16 n=145020 m=237916 users=100000 res=12020 updates=2000 qpu=10 W=100 B=1000 K=64
+# queries=20000 truth_allow_rate=0.7546
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	917.7	10.714	10.656	14.839	1085.22	0.32	21275.57	42922	407.10	0	0	20000	masks_per_entry_mean=1.096554;masks_per_entry_max=7;max_coef_log2=7.781360;ack_p99=21275.573730;probe_frac=0.000000;label_entries=5625997;prop_nodes=1270123;prop_trips=2911660;fa_targeted=0
+BFS	0.0	214.221	216.363	235.434	0.06	0.06	0.16	1	0.00	0	0	20000	;fa_targeted=0
+# who: AZX mean 32839.3 us p99 52414.1 | BFS mean 18645.3 us p99 63829.0
+# what: AZX mean 702.9 us p99 796.1 | BFS mean 2609.3 us p99 3311.8 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 511456
+# exit=0
+# cmd: ./code/authz ./data/deep_L16 AZX,BFS 10 2000 1 100 1000 64 env={'AUTHZ_FORCE_MODE': 'scan'}
+# wall_s: 29.4

@@ -1,0 +1,17 @@
+n 67426
+m 527936
+updates 19406
+ctx 6 3 3 3 5
+users 36062
+groups 9783
+roles 0
+resources 21581
+deny_edges 2955
+cond_edges 0
+source UCI Amazon Access Samples (real) + 1% synthetic deny
+group_grants_mined 50622
+direct_grants 245067
+history_events_used 20000
+effective_updates 19406
+effective_removes 181
+skipped_events 77

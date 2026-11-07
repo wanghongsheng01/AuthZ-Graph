@@ -1,0 +1,15 @@
+# closure_mean=6.1 closure_max=21 hubs_mean=1.2 (sample 1000 users)
+# build=cdb396bf191d defer_B=default(B) sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=./data/deep_L2 n=117020 m=180745 users=100000 res=12020 updates=2000 qpu=10 W=100 B=1000 K=64
+# queries=20000 truth_allow_rate=0.0426
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	5.3	0.224	0.216	0.338	0.50	0.13	5.15	17	6.53	0	0	20000	masks_per_entry_mean=1.000000;masks_per_entry_max=1;max_coef_log2=1.000000;ack_p99=5.154785;probe_frac=0.000000;label_entries=4024;prop_nodes=1155;prop_trips=2246;fa_targeted=0
+BFS	0.0	0.264	0.257	0.386	0.05	0.06	0.07	0	0.00	0	0	20000	;fa_targeted=0
+CLOSURE	6.1	0.277	0.270	0.396	0.37	0.07	3.51	17	6.93	0	0	20000	masks_per_entry_mean=1.000000;masks_per_entry_max=1;max_coef_log2=1.000000;ack_p99=3.506348;probe_frac=0.000000;label_entries=10928;prop_nodes=1028;prop_trips=2142;fa_targeted=0
+# who: AZX mean 76.0 us p99 173.1 | BFS mean 43.1 us p99 117.0
+# what: AZX mean 1.9 us p99 13.9 | BFS mean 1.5 us p99 10.3 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 48044
+# exit=0
+# cmd: ./code/authz ./data/deep_L2 AZX,BFS,CLOSURE 10 2000 2 100 1000 64 env={}
+# wall_s: 0.1

@@ -1,0 +1,12 @@
+# closure_mean=40.8 closure_max=121 hubs_mean=22.1 (sample 1000 users)
+# build=cdb396bf191d defer_B=64 sv_A=64 apply_cost_us=10 bg_flush=1 timing=batch
+# data=./data/syn100k n=116020 m=226642 users=100000 res=12020 updates=3000 qpu=10 W=100 B=1000 K=64
+# queries=30000 truth_allow_rate=0.4987
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	8.6	0.462	0.453	0.681	4.36	0.16	33.28	989	9.16	0	0	30000	masks_per_entry_mean=1.003490;masks_per_entry_max=2;max_coef_log2=2.321928;ack_p99=33.276855;probe_frac=0.000000;label_entries=37247;prop_nodes=10027;prop_trips=29838;fa_targeted=0
+AZX-DEFER-SAFE	12.5	0.672	0.662	1.021	5.87	0.63	51.05	943	9.16	0	625	30000	ack_mean=5.513277;ack_p50=0.626953;ack_p99=41.573730;deferred=821;sync=2178;flushes=7;targeted_flushes=216;targeted_ops=310;cancel=1;sync_us_mean=7.326997;flush_ms_total=5.608104;fa_targeted=0
+
+# Maximum resident set size (kbytes): 77240
+# exit=0
+# cmd: ./code/authz ./data/syn100k AZX,DEFER-SAFE 10 3000 1 100 1000 64 env={'AUTHZ_DEFER_B': '64', 'AUTHZ_APPLY_COST_US': '10', 'AUTHZ_BG_FLUSH': '1'}
+# wall_s: 0.2

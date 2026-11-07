@@ -1,0 +1,17 @@
+# closure_mean=40.8 closure_max=121 hubs_mean=22.1 (sample 1000 users)
+# build=cdb396bf191d defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=./data/syn100k n=116020 m=226642 users=100000 res=12020 updates=1000 qpu=10 W=100 B=1000 K=64
+# queries=10000 truth_allow_rate=0.5012
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	9.0	0.973	0.952	1.647	99.97	0.26	722.52	39215	8.97	0	0	10000	masks_per_entry_mean=1.001605;masks_per_entry_max=2;max_coef_log2=1.584963;ack_p99=722.520020;probe_frac=0.000000;label_entries=40498;prop_nodes=5136;prop_trips=13715;fa_targeted=0
+BFS	0.0	1.419	1.371	2.625	0.06	0.06	0.11	0	0.00	0	0	10000	;fa_targeted=0
+TC	5679.6	0.766	0.753	1.053	101653.34	300.93	2021326.09	11595426	1351.15	0	0	10000	rows_recomputed=956962;fa_targeted=0
+PLL-noDeny	242.2	0.446	0.435	1.169	223.84	0.10	0.54	223695	22.75	1853	488	10000	rebuilds=2;last_build_ms=223.592795;fa_cond=1138;fa_deny=271;fa_stale=444;fa_targeted=557
+LCR-LI	20.2	2.039	2.000	3.206	5150.70	0.42	143774.43	294840	13.56	0	0	10000	landmarks=64;relabels=183;fa_targeted=0
+# who: AZX mean 3213.6 us p99 7746.6 | BFS mean 1583.7 us p99 8697.8
+# what: AZX mean 27.7 us p99 60.7 | BFS mean 29.3 us p99 65.1 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 2021808
+# exit=0
+# cmd: ./code/authz ./data/syn100k AZX,BFS,TC,PLL,LCR 10 1000 1 100 1000 64 env={'AUTHZ_DEFER_B': '64'}
+# wall_s: 116.5

@@ -1,0 +1,17 @@
+# closure_mean=40.8 closure_max=121 hubs_mean=22.1 (sample 1000 users)
+# build=cdb396bf191d defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=./data/syn100k n=116020 m=226642 users=100000 res=12020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.4870
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	10.0	0.659	0.646	1.058	2.39	0.18	30.29	1026	9.81	0	0	100000	masks_per_entry_mean=1.004605;masks_per_entry_max=2;max_coef_log2=3.000000;ack_p99=30.293945;probe_frac=0.000000;label_entries=34529;prop_nodes=26503;prop_trips=90771;fa_targeted=0
+BFS	0.0	1.190	1.153	2.209	0.05	0.06	0.09	8	0.00	0	0	100000	;fa_targeted=0
+SV-DTC	4.7	1.709	1.660	2.918	15.31	0.10	386.06	3214	1.11	18041	2032	100000	fallback_frac=0.999630;recomputes=142;fa_cond=11752;fa_deny=2444;fa_stale=3845;fa_targeted=6279
+SV-DTC-deg5	5.7	1.320	1.283	2.446	21.30	0.10	1474.19	1639	1.11	18041	2032	100000	fallback_frac=0.757700;recomputes=142;fa_cond=11752;fa_deny=2444;fa_stale=3845;fa_targeted=6279
+SV-DTC-deg64	13.4	2.056	2.036	3.385	51.19	0.08	3546.72	3900	14.16	18041	2032	100000	fallback_frac=0.716810;recomputes=142;fa_cond=11752;fa_deny=2444;fa_stale=3845;fa_targeted=6279
+# who: AZX mean 2692.1 us p99 5668.8 | BFS mean 1095.2 us p99 2919.2
+# what: AZX mean 21.7 us p99 59.2 | BFS mean 22.3 us p99 63.0 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 138396
+# exit=0
+# cmd: ./code/authz ./data/syn100k AZX,BFS,SV-DTC,SV-DTC-deg5,SV-DTC-deg64 10 -1 1 100 1000 64 env={'AUTHZ_DEFER_B': '64'}
+# wall_s: 3.3

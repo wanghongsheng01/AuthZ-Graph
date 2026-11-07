@@ -1,0 +1,19 @@
+# closure_mean=94.6 closure_max=250 hubs_mean=58.8 (sample 1000 users)
+# build=cdb396bf191d defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=./data/syn10m n=11007010 m=22050043 users=10000000 res=607010 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.3328
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	1876.5	1.846	1.810	2.855	8.41	0.28	108.87	6520	1279.24	0	0	100000	masks_per_entry_mean=1.000246;masks_per_entry_max=2;max_coef_log2=1.584963;ack_p99=108.870117;probe_frac=0.000020;label_entries=10676864;prop_nodes=38818;prop_trips=325960;fa_targeted=0
+BFS	0.0	4.879	4.786	7.726	0.05	0.06	0.13	8	0.00	0	0	100000	;fa_targeted=0
+SPICE-ML100	0.0	3.281	3.107	5.686	0.06	0.06	0.17	1	1.97	0	8	100000	hit_rate=0.317330;fa_targeted=0
+SPICE-FC	0.0	4.015	3.870	6.179	0.06	0.06	0.12	8	1.97	0	0	100000	hit_rate=0.078630;fa_targeted=0
+CLOSURE	2666.1	2.158	2.127	3.227	11.50	0.20	148.07	10496	1705.98	0	0	100000	masks_per_entry_mean=1.000152;masks_per_entry_max=2;max_coef_log2=1.584963;ack_p99=148.071777;probe_frac=0.000280;label_entries=17294275;prop_nodes=26466;prop_trips=492007;fa_targeted=0
+AZX-DEFER-SAFE	2235.9	2.954	2.918	4.213	151.88	1.12	4754.02	6921	1279.24	0	2781	100000	ack_mean=151.875559;ack_p50=1.121094;ack_p99=4754.017578;deferred=2692;sync=7308;flushes=27;targeted_flushes=680;targeted_ops=907;cancel=0;sync_us_mean=206.820189;flush_ms_total=19.505536;fa_targeted=0
+AZX-DEFER-NAIVE	2202.4	2.938	2.894	4.237	149.79	0.68	4675.62	7011	1279.24	18	4768	100000	ack_mean=149.792981;ack_p50=0.684082;ack_p99=4675.625000;deferred=4994;sync=5006;flushes=78;targeted_flushes=0;targeted_ops=0;cancel=0;sync_us_mean=289.789799;flush_ms_total=43.735853;fa_targeted=18
+# who: AZX mean 18055.1 us p99 171998.6 | BFS mean 13928.4 us p99 121144.9
+# what: AZX mean 203.7 us p99 599.5 | BFS mean 132.4 us p99 480.7 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 13835392
+# exit=0
+# cmd: ./code/authz ./data/syn10m AZX,BFS,SPICE-ML,SPICE-FC,CLOSURE,DEFER-SAFE,DEFER-NAIVE 10 -1 1 100 1000 64 env={'AUTHZ_DEFER_B': '64'}
+# wall_s: 38.5

@@ -1,0 +1,17 @@
+n 42185
+m 329867
+updates 10000
+ctx 6 3 3 3 5
+users 5277
+groups 19894
+roles 994
+resources 16020
+deny_edges 996
+cond_edges 4160
+source REAL hpo (groups=19894, scc_merged=0) p_role=0.05
+nest_edges 24390
+raw_nest_edges 24390
+scc_merged_groups 0
+depth_max 16
+depth_mean 7.83
+member_edges 273933

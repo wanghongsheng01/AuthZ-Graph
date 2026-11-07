@@ -1,0 +1,36 @@
+# closure_mean=5166.9 closure_max=18106 hubs_mean=97.2 (sample 1000 users)
+# build=cdb396bf191d-wide defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=./data/real_enwiki n=2770291 m=11017122 users=354701 res=16020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.8721
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	26840.3	10.884	10.492	21.446	1673.35	0.34	1020.44	3206775	13624.03	0	0	100000	masks_per_entry_mean=1.034487;masks_per_entry_max=5;max_coef_log2=95.083530;ack_p99=1020.437988;probe_frac=0.499110;label_entries=164216474;prop_nodes=10317038;prop_trips=21188740;fa_targeted=0
+BFS	0.0	218.968	216.587	326.894	0.05	0.04	0.10	9	0.00	0	0	100000	;fa_targeted=0
+SPICE-ML100	0.0	141.688	137.889	260.318	0.07	0.08	0.16	7	1.94	2	1	100000	hit_rate=0.318590;fa_targeted=0
+SPICE-FC	0.0	197.336	195.259	297.283	0.05	0.04	0.07	8	1.94	0	0	100000	hit_rate=0.079740;fa_targeted=0
+# who: AZX mean 467804.1 us p99 892904.3 | BFS mean 159900.8 us p99 225760.7
+# what: AZX mean 302.9 us p99 908.3 | BFS mean 1502.0 us p99 4282.5 | who/what mismatches 0
+	Command being timed: "./code/authz_wide ./data/real_enwiki AZX,BFS,SPICE-ML,SPICE-FC 10 -1 1"
+	User time (seconds): 317.73
+	System time (seconds): 5.98
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 5:23.85
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 17890544
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 2
+	Minor (reclaiming a frame) page faults: 4120845
+	Voluntary context switches: 163
+	Involuntary context switches: 731
+	Swaps: 0
+	File system inputs: 166848
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+# exit=0
+# cmd: ./data/real_enwiki AZX,BFS,SPICE-ML,SPICE-FC 10 -1 1 env=AUTHZ_DEFER_B=64 (enwiki phase)

@@ -1,0 +1,13 @@
+# closure_mean=10.2 closure_max=35 hubs_mean=2.4 (sample 1000 users)
+# build=cdb396bf191d defer_B=256 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=./data/ent n=9068 m=10376 users=4157 res=3963 updates=5000 qpu=10 W=100 B=1000 K=64
+# queries=50000 truth_allow_rate=0.0904
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	0.5	0.149	0.147	0.204	0.50	0.08	7.91	122	0.68	0	0	50000	masks_per_entry_mean=1.000000;masks_per_entry_max=1;max_coef_log2=1.584963;ack_p99=7.911133;probe_frac=0.000860;label_entries=1548;prop_nodes=8188;prop_trips=9908;fa_targeted=0
+AZX-DEFER-SAFE	0.6	0.171	0.167	0.243	0.95	0.29	9.40	197	0.70	0	2560	50000	ack_mean=0.947437;ack_p50=0.292969;ack_p99=9.399902;deferred=1646;sync=3258;flushes=2;targeted_flushes=447;targeted_ops=1003;cancel=96;sync_us_mean=1.130209;flush_ms_total=2.333715;fa_targeted=0
+AZX-DEFER-NAIVE	0.7	0.164	0.161	0.233	0.64	0.23	3.51	276	0.66	8	1967	50000	ack_mean=0.639946;ack_p50=0.230469;ack_p99=3.510742;deferred=2486;sync=2425;flushes=9;targeted_flushes=0;targeted_ops=0;cancel=89;sync_us_mean=0.419903;flush_ms_total=1.414902;fa_targeted=8
+
+# Maximum resident set size (kbytes): 13344
+# exit=0
+# cmd: ./code/authz ./data/ent AZX,DEFER-SAFE,DEFER-NAIVE 10 5000 1 100 1000 64 env={'AUTHZ_DEFER_B': '256'}
+# wall_s: 0.1

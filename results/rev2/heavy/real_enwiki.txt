@@ -1,0 +1,36 @@
+# closure_mean=5166.9 closure_max=18106 hubs_mean=97.2 (sample 1000 users)
+# build=cdb396bf191d-wide defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=./data/real_enwiki n=2770291 m=11017122 users=354701 res=16020 updates=100 qpu=10 W=100 B=1000 K=64
+# queries=1000 truth_allow_rate=0.8660
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	26658.5	10.024	10.035	16.906	31.00	0.31	1273.57	1410	13451.95	0	0	1000	masks_per_entry_mean=1.026859;masks_per_entry_max=4;max_coef_log2=95.083530;ack_p99=1273.571777;probe_frac=0.520000;label_entries=166561505;prop_nodes=3494;prop_trips=4060;fa_targeted=0
+BFS	0.0	209.935	210.642	318.067	0.05	0.05	0.07	0	0.00	0	0	1000	;fa_targeted=0
+PLL-noDeny	174485.7	0.659	0.631	1.332	0.08	0.09	0.14	0	1496.94	61	4	1000	rebuilds=1;last_build_ms=174485.504250;fa_cond=51;fa_deny=8;fa_stale=2;fa_targeted=20
+LCR-LI	469.4	224.937	223.495	339.857	167.76	0.27	619.19	15670	16.49	0	0	1000	landmarks=64;relabels=0;fa_targeted=0
+# who: AZX mean 466516.0 us p99 889784.5 | BFS mean 157523.4 us p99 211777.6
+# what: AZX mean 97.4 us p99 166.6 | BFS mean 834.5 us p99 1914.3 | who/what mismatches 0
+	Command being timed: "./code/authz_wide ./data/real_enwiki AZX,BFS,PLL,LCR 10 100 1"
+	User time (seconds): 392.93
+	System time (seconds): 6.50
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 6:39.45
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 19128672
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 4406213
+	Voluntary context switches: 1
+	Involuntary context switches: 1042
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+# exit=0
+# cmd: ./data/real_enwiki AZX,BFS,PLL,LCR 10 100 1 env=AUTHZ_DEFER_B=64 (enwiki phase)

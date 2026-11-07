@@ -1,0 +1,19 @@
+# closure_mean=3380.5 closure_max=4284 hubs_mean=387.0 (sample 1000 users)
+# build=cdb396bf191d defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=./data/deep_L12 n=137020 m=221565 users=100000 res=12020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.8390
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	216.8	4.146	4.132	5.700	208.41	0.24	4902.84	19878	119.02	0	0	100000	masks_per_entry_mean=1.034216;masks_per_entry_max=4;max_coef_log2=5.000000;ack_p99=4902.841309;probe_frac=0.983290;label_entries=1370495;prop_nodes=1543261;prop_trips=2664580;fa_targeted=0
+BFS	0.0	57.638	58.006	70.057	0.06	0.06	0.15	7	0.00	0	0	100000	;fa_targeted=0
+SPICE-ML100	0.0	40.030	40.020	62.570	0.07	0.08	0.22	8	1.95	16	1	100000	hit_rate=0.307060;fa_targeted=0
+SPICE-FC	0.0	53.231	53.312	67.843	0.05	0.06	0.14	1	1.95	0	0	100000	hit_rate=0.068170;fa_targeted=0
+CLOSURE	1999.8	4.674	4.662	6.419	1020.43	0.20	23426.46	87369	839.28	0	0	100000	masks_per_entry_mean=1.003726;masks_per_entry_max=4;max_coef_log2=5.000000;ack_p99=23426.463867;probe_frac=0.984700;label_entries=12584356;prop_nodes=1367368;prop_trips=3410155;fa_targeted=0
+AZX-DEFER-SAFE	216.1	4.620	4.611	6.254	202.68	1.01	5002.14	20237	119.15	0	484	100000	ack_mean=202.679511;ack_p50=1.011230;ack_p99=5002.136719;deferred=3334;sync=6664;flushes=28;targeted_flushes=883;targeted_ops=1519;cancel=2;sync_us_mean=277.683470;flush_ms_total=765.022287;fa_targeted=0
+AZX-DEFER-NAIVE	215.9	4.237	4.232	5.869	190.29	0.65	5626.76	26574	118.86	230	442	100000	ack_mean=190.294390;ack_p50=0.645020;ack_p99=5626.755859;deferred=4919;sync=5074;flushes=76;targeted_flushes=0;targeted_ops=0;cancel=7;sync_us_mean=211.561671;flush_ms_total=825.652425;fa_targeted=225
+# who: AZX mean 15629.1 us p99 27576.5 | BFS mean 8362.6 us p99 45700.5
+# what: AZX mean 290.3 us p99 370.2 | BFS mean 883.3 us p99 1136.3 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 1497352
+# exit=0
+# cmd: ./code/authz ./data/deep_L12 AZX,BFS,SPICE-ML,SPICE-FC,CLOSURE,DEFER-SAFE,DEFER-NAIVE 10 -1 1 100 1000 64 env={'AUTHZ_DEFER_B': '64'}
+# wall_s: 50.9

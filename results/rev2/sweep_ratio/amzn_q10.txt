@@ -1,0 +1,17 @@
+# closure_mean=9.8 closure_max=89 hubs_mean=2.0 (sample 1000 users)
+# build=cdb396bf191d defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=./data/amzn n=67426 m=527936 users=36062 res=21581 updates=5000 qpu=10 W=100 B=1000 K=64
+# queries=50000 truth_allow_rate=0.0455
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	5.2	0.370	0.230	2.287	0.06	0.04	0.21	10	3.82	0	0	50000	masks_per_entry_mean=1.000000;masks_per_entry_max=1;max_coef_log2=0.000000;ack_p99=0.205566;probe_frac=0.044800;label_entries=4282;prop_nodes=0;prop_trips=0;fa_targeted=0
+BFS	0.0	0.224	0.202	0.697	0.03	0.03	0.06	0	0.00	0	0	50000	;fa_targeted=0
+SPICE-ML100	0.0	0.281	0.257	0.618	0.03	0.03	0.07	9	0.95	0	0	50000	hit_rate=0.360800;fa_targeted=0
+AZX-DEFER-SAFE	9.9	0.511	0.364	2.572	0.86	0.13	20.30	141	3.82	0	340	50000	ack_mean=0.861435;ack_p50=0.133301;ack_p99=20.298828;deferred=4127;sync=867;flushes=29;targeted_flushes=176;targeted_ops=2251;cancel=6;sync_us_mean=3.025241;flush_ms_total=2.896893;fa_targeted=0
+AZX-DEFER-NAIVE	10.0	0.474	0.330	2.757	0.74	0.10	22.78	137	3.82	0	360	50000	ack_mean=0.735669;ack_p50=0.099609;ack_p99=22.775879;deferred=4948;sync=47;flushes=77;targeted_flushes=0;targeted_ops=0;cancel=5;sync_us_mean=0.779214;flush_ms_total=3.022063;fa_targeted=0
+# who: AZX mean 2.1 us p99 11.4 | BFS mean 1.2 us p99 8.4
+# what: AZX mean 0.9 us p99 7.2 | BFS mean 1.1 us p99 7.4 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 141524
+# exit=0
+# cmd: ./code/authz ./data/amzn AZX,BFS,SPICE-ML,DEFER-SAFE,DEFER-NAIVE 10 5000 1 100 1000 64 env={'AUTHZ_DEFER_B': '64'}
+# wall_s: 0.3

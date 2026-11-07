@@ -1,0 +1,17 @@
+# closure_mean=57.5 closure_max=501 hubs_mean=6.3 (sample 1000 users)
+# build=cdb396bf191d defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=./data/real_go_m4 n=114439 m=465721 users=38821 res=16020 updates=1000 qpu=10 W=100 B=1000 K=64
+# queries=10000 truth_allow_rate=0.1106
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	52.8	0.632	0.612	1.089	117.86	0.35	3276.63	16292	23.86	0	0	10000	masks_per_entry_mean=1.001614;masks_per_entry_max=3;max_coef_log2=7.169925;ack_p99=3276.632324;probe_frac=0.000000;label_entries=276319;prop_nodes=13522;prop_trips=19935;fa_targeted=0
+BFS	0.0	1.824	1.653	4.722	0.06	0.06	0.17	0	0.00	0	0	10000	;fa_targeted=0
+TC	664.7	0.429	0.417	0.650	2570.66	47.82	50413.34	142054	99.17	0	0	10000	rows_recomputed=27833;fa_targeted=0
+PLL-noDeny	931.4	0.406	0.396	0.628	911.25	0.07	0.53	911142	22.26	657	125	10000	rebuilds=2;last_build_ms=911.137327;fa_cond=318;fa_deny=39;fa_stale=300;fa_targeted=319
+LCR-LI	7.0	1.999	1.716	5.996	17.00	0.24	45.93	9336	0.45	0	0	10000	landmarks=64;relabels=4;fa_targeted=0
+# who: AZX mean 521.4 us p99 960.2 | BFS mean 205.0 us p99 452.4
+# what: AZX mean 7.5 us p99 67.1 | BFS mean 11.8 us p99 99.6 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 260524
+# exit=0
+# cmd: ./code/authz ./data/real_go_m4 AZX,BFS,TC,PLL,LCR 10 1000 1 100 1000 64 env={'AUTHZ_DEFER_B': '64'}
+# wall_s: 6.0

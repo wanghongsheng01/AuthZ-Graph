@@ -1,0 +1,19 @@
+# closure_mean=109.6 closure_max=1612 hubs_mean=73.8 (sample 1000 users)
+# build=cdb396bf191d defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=./data/orkut n=9240304 m=108338624 users=2307085 res=16020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.6950
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	11137.7	69.338	68.496	102.852	2.27	0.40	16.76	2354	2179.41	0	0	100000	masks_per_entry_mean=1.000013;masks_per_entry_max=2;max_coef_log2=3.000000;ack_p99=16.756836;probe_frac=0.000000;label_entries=27823041;prop_nodes=14670;prop_trips=28754;fa_targeted=0
+BFS	0.0	83.392	81.091	151.942	0.06	0.06	0.17	11	0.00	0	0	100000	;fa_targeted=0
+SPICE-ML100	0.0	44.976	42.713	94.289	0.11	0.10	0.40	1	1.99	0	1	100000	hit_rate=0.313210;fa_targeted=0
+SPICE-FC	0.0	69.234	68.323	120.447	0.08	0.08	0.16	1	1.99	0	0	100000	hit_rate=0.072690;fa_targeted=0
+CLOSURE	14808.5	62.359	60.993	103.887	1.63	0.27	13.04	2165	2949.86	0	0	100000	masks_per_entry_mean=1.000009;masks_per_entry_max=2;max_coef_log2=3.000000;ack_p99=13.041992;probe_frac=0.000000;label_entries=40377665;prop_nodes=12870;prop_trips=28089;fa_targeted=0
+AZX-DEFER-SAFE	10818.6	96.513	95.483	140.983	8.72	2.02	98.06	2248	2179.41	0	1647	100000	ack_mean=8.719408;ack_p50=2.020508;ack_p99=98.063965;deferred=3953;sync=6047;flushes=27;targeted_flushes=876;targeted_ops=2187;cancel=0;sync_us_mean=8.889136;flush_ms_total=45.361470;fa_targeted=0
+AZX-DEFER-NAIVE	10752.8	95.195	94.262	138.658	6.90	1.08	88.81	2670	2179.41	186	1991	100000	ack_mean=6.901163;ack_p50=1.082031;ack_p99=88.812988;deferred=4913;sync=5087;flushes=76;targeted_flushes=0;targeted_ops=0;cancel=0;sync_us_mean=5.287045;flush_ms_total=36.866841;fa_targeted=186
+# who: AZX mean 691815.9 us p99 740812.2 | BFS mean 233883.6 us p99 256609.3
+# what: AZX mean 83.5 us p99 389.1 | BFS mean 75.6 us p99 419.3 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 34383816
+# exit=0
+# cmd: ./code/authz ./data/orkut AZX,BFS,SPICE-ML,SPICE-FC,CLOSURE,DEFER-SAFE,DEFER-NAIVE 10 -1 1 100 1000 64 env={'AUTHZ_DEFER_B': '64'}
+# wall_s: 438.7

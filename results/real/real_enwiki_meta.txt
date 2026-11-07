@@ -1,0 +1,18 @@
+n 2770291
+m 11017122
+updates 10000
+ctx 6 3 3 3 5
+users 354701
+groups 2397570
+roles 2000
+resources 16020
+deny_edges 1998
+cond_edges 11917
+source REAL enwiki-5pct-users (groups=2398103, scc_merged=533) p_role=0.005
+nest_edges 8736220
+raw_nest_edges 8746184
+scc_merged_groups 533
+depth_max 401
+depth_mean 242.74
+member_edges 2215358
+n_roles 2000

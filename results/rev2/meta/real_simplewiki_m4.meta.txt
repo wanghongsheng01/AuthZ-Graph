@@ -1,0 +1,17 @@
+n 499482
+m 1465171
+updates 10000
+ctx 6 3 3 3 5
+users 280212
+groups 198392
+roles 4858
+resources 16020
+deny_edges 4835
+cond_edges 20976
+source REAL simplewiki (groups=97228, scc_merged=54) p_role=0.05 materialised users deg>=4: 101218
+nest_edges 257023
+raw_nest_edges 257151
+scc_merged_groups 54
+depth_max 41
+depth_mean 18.91
+member_edges 1012726

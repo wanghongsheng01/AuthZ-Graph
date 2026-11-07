@@ -1,0 +1,11 @@
+n 9068
+m 10376
+updates 10000
+ctx 6 2 3 4
+users 4157
+groups 900
+roles 48
+resources 3963
+deny_edges 40
+cond_edges 523
+source enterprise-shaped reconstruction (no real rows)

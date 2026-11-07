@@ -1,0 +1,19 @@
+# closure_mean=57.0 closure_max=829 hubs_mean=6.3 (sample 1000 users)
+# build=cdb396bf191d defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=./data/real_go_m4 n=114439 m=465721 users=38821 res=16020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.1381
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	53.0	0.569	0.555	0.932	9.59	0.25	153.85	3576	25.64	0	0	100000	masks_per_entry_mean=1.001630;masks_per_entry_max=3;max_coef_log2=7.276124;ack_p99=153.854980;probe_frac=0.000000;label_entries=249638;prop_nodes=127789;prop_trips=198480;fa_targeted=0
+BFS	0.0	1.789	1.651	4.060	0.07	0.07	0.19	1	0.00	0	0	100000	;fa_targeted=0
+SPICE-ML100	0.0	1.250	1.086	3.182	0.06	0.07	0.15	1	1.87	1	5	100000	hit_rate=0.315360;fa_targeted=1
+SPICE-FC	0.0	1.513	1.345	3.388	0.06	0.06	0.15	8	1.87	0	0	100000	hit_rate=0.076840;fa_targeted=0
+CLOSURE	432.5	1.098	1.061	2.021	19.16	0.55	276.79	9386	158.81	0	0	100000	masks_per_entry_mean=1.000175;masks_per_entry_max=3;max_coef_log2=11.090774;ack_p99=276.792969;probe_frac=0.013890;label_entries=2320912;prop_nodes=114765;prop_trips=333371;fa_targeted=0
+AZX-DEFER-SAFE	57.0	1.115	1.093	1.899	10.46	0.70	170.14	3860	25.65	0	1524	100000	ack_mean=10.463219;ack_p50=0.696289;ack_p99=170.135254;deferred=4161;sync=5838;flushes=30;targeted_flushes=831;targeted_ops=2186;cancel=1;sync_us_mean=14.781751;flush_ms_total=43.412506;fa_targeted=0
+AZX-DEFER-NAIVE	56.0	1.057	1.035	1.868	9.57	0.43	193.52	3731	25.63	37	1700	100000	ack_mean=9.571880;ack_p50=0.434082;ack_p99=193.521973;deferred=5009;sync=4990;flushes=78;targeted_flushes=0;targeted_ops=0;cancel=1;sync_us_mean=9.748209;flush_ms_total=45.023484;fa_targeted=37
+# who: AZX mean 428.3 us p99 889.4 | BFS mean 168.6 us p99 423.4
+# what: AZX mean 7.1 us p99 48.5 | BFS mean 13.6 us p99 111.0 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 430300
+# exit=0
+# cmd: ./code/authz ./data/real_go_m4 AZX,BFS,SPICE-ML,SPICE-FC,CLOSURE,DEFER-SAFE,DEFER-NAIVE 10 -1 2 100 1000 64 env={'AUTHZ_DEFER_B': '64'}
+# wall_s: 2.9

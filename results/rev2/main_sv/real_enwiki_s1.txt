@@ -1,0 +1,36 @@
+# closure_mean=5166.9 closure_max=18106 hubs_mean=97.2 (sample 1000 users)
+# build=cdb396bf191d-wide defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=./data/real_enwiki n=2770291 m=11017122 users=354701 res=16020 updates=2000 qpu=10 W=100 B=1000 K=64
+# queries=20000 truth_allow_rate=0.8702
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	26872.1	10.654	10.262	21.504	1243.34	0.32	466.72	1942644	13404.44	0	0	20000	masks_per_entry_mean=1.027150;masks_per_entry_max=4;max_coef_log2=95.083530;ack_p99=466.720215;probe_frac=0.521250;label_entries=164760853;prop_nodes=2403602;prop_trips=2449863;fa_targeted=0
+BFS	0.0	214.628	212.590	318.047	0.06	0.05	0.12	7	0.00	0	0	20000	;fa_targeted=0
+SV-DTC	226.3	72.357	70.921	125.310	115.40	0.20	3506.04	129429	26.42	1272	59	20000	fallback_frac=0.999300;recomputes=29;fa_cond=1116;fa_deny=116;fa_stale=40;fa_targeted=365
+SV-DTC-deg64	1439.8	58.215	56.746	109.048	15731.87	0.16	1120317.30	1144342	338.17	1272	59	20000	fallback_frac=0.786250;recomputes=29;fa_cond=1116;fa_deny=116;fa_stale=40;fa_targeted=365
+# who: AZX mean 466511.4 us p99 810205.4 | BFS mean 165291.4 us p99 220530.2
+# what: AZX mean 274.2 us p99 695.0 | BFS mean 1667.3 us p99 4298.0 | who/what mismatches 0
+	Command being timed: "./code/authz_wide ./data/real_enwiki AZX,BFS,SV-DTC,SV-DTC-deg64 10 2000 1"
+	User time (seconds): 270.53
+	System time (seconds): 6.20
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 4:36.86
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 19422964
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 2
+	Minor (reclaiming a frame) page faults: 4363242
+	Voluntary context switches: 175
+	Involuntary context switches: 234
+	Swaps: 0
+	File system inputs: 205176
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+# exit=0
+# cmd: ./data/real_enwiki AZX,BFS,SV-DTC,SV-DTC-deg64 10 2000 1 env=AUTHZ_DEFER_B=64 (enwiki phase)

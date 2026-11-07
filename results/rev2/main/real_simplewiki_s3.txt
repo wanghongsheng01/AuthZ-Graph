@@ -1,0 +1,19 @@
+# closure_mean=205.4 closure_max=1057 hubs_mean=34.6 (sample 1000 users)
+# build=cdb396bf191d defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=./data/real_simplewiki n=398264 m=1363953 users=280212 res=16020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.3848
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	269.1	2.595	2.071	14.252	45.60	0.24	105.31	105716	144.09	0	0	100000	masks_per_entry_mean=1.000139;masks_per_entry_max=3;max_coef_log2=19.609583;ack_p99=105.310059;probe_frac=0.007880;label_entries=1678873;prop_nodes=366397;prop_trips=1014733;fa_targeted=0
+BFS	0.0	8.101	7.871	15.106	0.05	0.06	0.10	0	0.00	0	0	100000	;fa_targeted=0
+SPICE-ML100	0.0	5.598	5.272	12.096	0.05	0.06	0.11	1	1.92	12	26	100000	hit_rate=0.320250;fa_targeted=0
+SPICE-FC	0.0	6.852	6.593	13.328	0.05	0.06	0.08	9	1.92	0	0	100000	hit_rate=0.080980;fa_targeted=0
+CLOSURE	1486.4	6.990	6.023	21.721	87.88	0.17	195.31	193560	672.87	0	0	100000	masks_per_entry_mean=1.000024;masks_per_entry_max=3;max_coef_log2=19.616149;ack_p99=195.308594;probe_frac=0.157790;label_entries=9931468;prop_nodes=349824;prop_trips=1252818;fa_targeted=0
+AZX-DEFER-SAFE	272.5	3.520	3.034	15.063	42.31	0.93	121.91	88747	144.09	0	1923	100000	ack_mean=42.307491;ack_p50=0.931641;ack_p99=121.914551;deferred=3174;sync=6824;flushes=29;targeted_flushes=833;targeted_ops=1316;cancel=2;sync_us_mean=60.239490;flush_ms_total=179.253202;fa_targeted=0
+AZX-DEFER-NAIVE	273.2	3.310	2.909	13.144	40.42	0.57	129.97	81277	144.04	81	2421	100000	ack_mean=40.423071;ack_p50=0.571777;ack_p99=129.967773;deferred=4995;sync=5004;flushes=78;targeted_flushes=0;targeted_ops=0;cancel=1;sync_us_mean=44.470214;flush_ms_total=178.641568;fa_targeted=81
+# who: AZX mean 22355.6 us p99 76924.9 | BFS mean 10906.7 us p99 49299.6
+# what: AZX mean 37.3 us p99 94.1 | BFS mean 75.3 us p99 208.2 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 1775288
+# exit=0
+# cmd: ./code/authz ./data/real_simplewiki AZX,BFS,SPICE-ML,SPICE-FC,CLOSURE,DEFER-SAFE,DEFER-NAIVE 10 -1 3 100 1000 64 env={'AUTHZ_DEFER_B': '64'}
+# wall_s: 20.8

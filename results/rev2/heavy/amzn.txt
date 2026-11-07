@@ -1,0 +1,17 @@
+# closure_mean=9.8 closure_max=89 hubs_mean=2.0 (sample 1000 users)
+# build=cdb396bf191d defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=./data/amzn n=67426 m=527936 users=36062 res=21581 updates=1000 qpu=10 W=100 B=1000 K=64
+# queries=10000 truth_allow_rate=0.0404
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	5.5	0.338	0.261	1.391	0.06	0.04	0.23	1	3.82	0	0	10000	masks_per_entry_mean=1.000000;masks_per_entry_max=1;max_coef_log2=0.000000;ack_p99=0.229980;probe_frac=0.041200;label_entries=4282;prop_nodes=0;prop_trips=0;fa_targeted=0
+BFS	0.0	0.240	0.225	0.480	0.03	0.03	0.10	0	0.00	0	0	10000	;fa_targeted=0
+TC	130.0	0.181	0.175	0.294	8.42	3.72	67.76	477	25.82	0	0	10000	rows_recomputed=1000;fa_targeted=0
+PLL-noDeny	89.4	0.184	0.176	0.291	72.24	0.03	0.06	72210	6.80	0	28	10000	rebuilds=2;last_build_ms=72.198158;fa_cond=0;fa_deny=0;fa_stale=0;fa_targeted=0
+LCR-LI	2.8	0.295	0.242	1.099	0.15	0.14	0.50	1	1.35	0	0	10000	landmarks=64;relabels=0;fa_targeted=0
+# who: AZX mean 2.1 us p99 10.3 | BFS mean 1.3 us p99 9.2
+# what: AZX mean 0.9 us p99 6.7 | BFS mean 1.0 us p99 5.1 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 108176
+# exit=0
+# cmd: ./code/authz ./data/amzn AZX,BFS,TC,PLL,LCR 10 1000 1 100 1000 64 env={'AUTHZ_DEFER_B': '64'}
+# wall_s: 0.4

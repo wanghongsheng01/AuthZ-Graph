@@ -1,0 +1,33 @@
+# closure_mean=5166.9 closure_max=18106 hubs_mean=97.2 (sample 1000 users)
+# build=cdb396bf191d-wide defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=./data/real_enwiki n=2770291 m=11017122 users=354701 res=16020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.8721
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	26666.6	10.331	9.928	21.243	1623.59	0.22	871.13	3075388	13624.03	0	0	100000	masks_per_entry_mean=1.034487;masks_per_entry_max=5;max_coef_log2=95.083530;ack_p99=871.125977;probe_frac=0.499110;label_entries=164216474;prop_nodes=10317038;prop_trips=21188740;fa_targeted=0
+AZX-DEFER-SAFE	26445.6	9.432	8.984	19.563	1512.87	0.93	944.02	2768527	13624.05	0	680	100000	ack_mean=1512.870636;ack_p50=0.930176;ack_p99=944.023926;deferred=3235;sync=6764;flushes=26;targeted_flushes=889;targeted_ops=1514;cancel=1;sync_us_mean=2161.754879;flush_ms_total=6193.988921;fa_targeted=0
+AZX-DEFER-NAIVE	26429.5	8.753	8.288	18.811	1493.96	0.58	850.08	2818981	13624.02	5	838	100000	ack_mean=1493.955820;ack_p50=0.578613;ack_p99=850.076172;deferred=5060;sync=4940;flushes=79;targeted_flushes=0;targeted_ops=0;cancel=0;sync_us_mean=1808.547592;flush_ms_total=6001.570865;fa_targeted=5
+	Command being timed: "./code/authz_wide ./data/real_enwiki AZX,DEFER-SAFE,DEFER-NAIVE 10 -1 1"
+	User time (seconds): 162.94
+	System time (seconds): 16.53
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:59.48
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 52646620
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 12225345
+	Voluntary context switches: 1
+	Involuntary context switches: 440
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+# exit=0
+# cmd: ./data/real_enwiki AZX,DEFER-SAFE,DEFER-NAIVE 10 -1 1 env=AUTHZ_DEFER_B=64 (enwiki phase)

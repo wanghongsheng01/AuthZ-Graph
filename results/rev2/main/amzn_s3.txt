@@ -1,0 +1,19 @@
+# closure_mean=9.6 closure_max=43 hubs_mean=2.0 (sample 1000 users)
+# build=cdb396bf191d defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=./data/amzn n=67426 m=527936 users=36062 res=21581 updates=19406 qpu=10 W=100 B=1000 K=64
+# queries=194060 truth_allow_rate=0.0436
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	5.8	0.406	0.308	2.069	0.06	0.04	0.30	1	3.82	0	0	194060	masks_per_entry_mean=1.000000;masks_per_entry_max=1;max_coef_log2=0.000000;ack_p99=0.295898;probe_frac=0.052654;label_entries=4282;prop_nodes=0;prop_trips=0;fa_targeted=0
+BFS	0.0	0.261	0.242	0.694	0.03	0.03	0.10	9	0.00	0	0	194060	;fa_targeted=0
+SPICE-ML100	0.0	0.412	0.362	0.774	0.03	0.03	0.07	0	3.23	0	0	194060	hit_rate=0.363413;fa_targeted=0
+SPICE-FC	0.0	0.456	0.410	0.939	0.04	0.04	0.05	0	3.23	0	0	194060	hit_rate=0.124060;fa_targeted=0
+CLOSURE	7.2	0.533	0.430	2.200	0.05	0.04	0.24	1	4.64	0	0	194060	masks_per_entry_mean=1.000000;masks_per_entry_max=1;max_coef_log2=0.000000;ack_p99=0.243164;probe_frac=0.101762;label_entries=20325;prop_nodes=0;prop_trips=0;fa_targeted=0
+AZX-DEFER-SAFE	11.0	0.621	0.515	2.554	0.70	0.16	14.26	147	3.82	0	1334	194060	ack_mean=0.700069;ack_p50=0.159668;ack_p99=14.255859;deferred=15119;sync=4273;flushes=104;targeted_flushes=835;targeted_ops=8410;cancel=14;sync_us_mean=1.827365;flush_ms_total=7.686656;fa_targeted=0
+AZX-DEFER-NAIVE	11.0	0.595	0.485	2.574	0.60	0.11	19.56	164	3.82	10	1484	194060	ack_mean=0.601005;ack_p50=0.108887;ack_p99=19.562012;deferred=19225;sync=166;flushes=300;targeted_flushes=0;targeted_ops=0;cancel=15;sync_us_mean=0.879018;flush_ms_total=8.626618;fa_targeted=10
+# who: AZX mean 2.4 us p99 14.6 | BFS mean 1.3 us p99 11.0
+# what: AZX mean 1.3 us p99 6.6 | BFS mean 1.2 us p99 6.2 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 176448
+# exit=0
+# cmd: ./code/authz ./data/amzn AZX,BFS,SPICE-ML,SPICE-FC,CLOSURE,DEFER-SAFE,DEFER-NAIVE 10 -1 3 100 1000 64 env={'AUTHZ_DEFER_B': '64'}
+# wall_s: 1.1

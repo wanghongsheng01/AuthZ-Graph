@@ -1,0 +1,12 @@
+n 1311032
+m 6750856
+updates 10000
+ctx 6 3 3 3 5
+users 1075012
+groups 200000
+roles 20000
+resources 16020
+deny_edges 19878
+cond_edges 110115
+source SNAP com-lj.all.cmty.txt.gz
+nest_edges 141892

@@ -1,0 +1,12 @@
+n 72378
+m 152130
+updates 10000
+ctx 6 3 3 3 5
+users 47135
+groups 8385
+roles 838
+resources 16020
+deny_edges 845
+cond_edges 4664
+source SNAP com-youtube.all.cmty.txt.gz
+nest_edges 4210

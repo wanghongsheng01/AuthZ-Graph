@@ -1,0 +1,19 @@
+# closure_mean=9579.9 closure_max=10578 hubs_mean=764.8 (sample 1000 users)
+# build=cdb396bf191d defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=./data/deep_L16 n=145020 m=237916 users=100000 res=12020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.7770
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	947.4	5.492	5.489	7.357	1008.44	0.35	21321.69	45964	414.00	0	0	100000	masks_per_entry_mean=1.081602;masks_per_entry_max=8;max_coef_log2=8.139551;ack_p99=21321.687988;probe_frac=0.984460;label_entries=5233646;prop_nodes=5561475;prop_trips=10623180;fa_targeted=0
+BFS	0.0	217.976	220.344	240.565	0.07	0.06	0.25	1	0.00	0	0	100000	;fa_targeted=0
+SPICE-ML100	0.0	151.041	152.129	227.124	0.12	0.11	0.41	8	1.95	5	11	100000	hit_rate=0.307310;fa_targeted=0
+SPICE-FC	0.0	203.194	204.231	237.276	0.06	0.06	0.14	9	1.95	0	0	100000	hit_rate=0.067870;fa_targeted=0
+CLOSURE	12430.7	6.316	6.319	8.339	7998.54	0.25	215613.69	470965	4231.81	0	0	100000	masks_per_entry_mean=1.006811;masks_per_entry_max=8;max_coef_log2=8.139551;ack_p99=215613.694824;probe_frac=0.984570;label_entries=62699907;prop_nodes=4693910;prop_trips=22487254;fa_targeted=0
+AZX-DEFER-SAFE	928.0	6.169	6.154	8.084	970.80	1.37	23599.71	77164	415.16	0	583	100000	ack_mean=970.800784;ack_p50=1.370605;ack_p99=23599.706055;deferred=3289;sync=6709;flushes=28;targeted_flushes=857;targeted_ops=1441;cancel=2;sync_us_mean=1269.101858;flush_ms_total=4141.179752;fa_targeted=0
+AZX-DEFER-NAIVE	925.1	5.862	5.842	7.864	944.53	0.80	25215.43	141998	413.46	78	513	100000	ack_mean=944.530498;ack_p50=0.804688;ack_p99=25215.429199;deferred=4950;sync=5047;flushes=77;targeted_flushes=0;targeted_ops=0;cancel=3;sync_us_mean=954.536580;flush_ms_total=4622.158330;fa_targeted=73
+# who: AZX mean 33906.7 us p99 58177.5 | BFS mean 22825.7 us p99 87336.1
+# what: AZX mean 805.8 us p99 939.7 | BFS mean 3166.6 us p99 4363.4 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 5996300
+# exit=0
+# cmd: ./code/authz ./data/deep_L16 AZX,BFS,SPICE-ML,SPICE-FC,CLOSURE,DEFER-SAFE,DEFER-NAIVE 10 -1 2 100 1000 64 env={'AUTHZ_DEFER_B': '64'}
+# wall_s: 230.4

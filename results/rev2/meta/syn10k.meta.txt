@@ -1,0 +1,11 @@
+n 17011
+m 27874
+updates 10000
+ctx 6 3 3 3 5
+users 10000
+groups 300
+roles 100
+resources 6611
+deny_edges 96
+cond_edges 576
+source synthetic-zanzibar n_users=10000 seed=1

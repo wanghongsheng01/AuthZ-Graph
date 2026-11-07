@@ -1,0 +1,12 @@
+n 8825038
+m 24722494
+updates 10000
+ctx 6 3 3 3 5
+users 7756149
+groups 957154
+roles 95715
+resources 16020
+deny_edges 95342
+cond_edges 530880
+source SNAP com-friendster.all.cmty.txt.gz (gen_snap_lean, max_groups=0)
+nest_edges 414784

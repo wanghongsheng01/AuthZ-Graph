@@ -1,0 +1,17 @@
+# closure_mean=195.4 closure_max=911 hubs_mean=32.6 (sample 1000 users)
+# build=cdb396bf191d defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=./data/real_simplewiki_m4 n=499482 m=1465171 users=280212 res=16020 updates=1000 qpu=10 W=100 B=1000 K=64
+# queries=10000 truth_allow_rate=0.3732
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	1449.7	1.636	1.608	2.462	1204.48	0.65	22071.09	197750	471.86	0	0	10000	masks_per_entry_mean=1.000782;masks_per_entry_max=3;max_coef_log2=21.624949;ack_p99=22071.094238;probe_frac=0.000000;label_entries=6592038;prop_nodes=121414;prop_trips=612419;fa_targeted=0
+BFS	0.0	8.166	7.940	14.682	0.07	0.06	0.20	1	0.00	0	0	10000	;fa_targeted=0
+TC	26126.7	0.816	0.797	1.670	292987.33	737.96	8395504.47	46792049	3931.09	0	0	10000	rows_recomputed=1131293;fa_targeted=0
+PLL-noDeny	11636.7	0.675	0.664	1.057	10453.20	0.11	0.64	10453033	154.26	1516	146	10000	rebuilds=2;last_build_ms=10453.029917;fa_cond=837;fa_deny=301;fa_stale=378;fa_targeted=492
+LCR-LI	41.5	8.635	8.250	17.132	3256.34	0.50	43849.05	826957	11.43	0	0	10000	landmarks=64;relabels=100;fa_targeted=0
+# who: AZX mean 20668.1 us p99 52753.7 | BFS mean 12124.0 us p99 92289.9
+# what: AZX mean 28.7 us p99 96.8 | BFS mean 46.3 us p99 163.4 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 6566632
+# exit=0
+# cmd: ./code/authz ./data/real_simplewiki_m4 AZX,BFS,TC,PLL,LCR 10 1000 1 100 1000 64 env={'AUTHZ_DEFER_B': '64'}
+# wall_s: 366.1

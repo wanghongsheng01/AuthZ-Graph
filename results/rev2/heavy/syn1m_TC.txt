@@ -1,0 +1,12 @@
+# closure_mean=59.4 closure_max=133 hubs_mean=37.3 (sample 1000 users)
+# build=cdb396bf191d defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=./data/syn1m n=1106110 m=2210540 users=1000000 res=66110 updates=50 qpu=10 W=100 B=1000 K=64
+# queries=500 truth_allow_rate=0.2740
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	131.3	1.542	1.484	2.861	100.21	0.30	16.72	4954	106.29	0	0	500	masks_per_entry_mean=1.001229;masks_per_entry_max=3;max_coef_log2=1.584963;ack_p99=16.724609;probe_frac=0.000000;label_entries=741240;prop_nodes=64;prop_trips=146;fa_targeted=0
+TC	108185.2	0.964	0.899	2.029	100385.92	304.45	1245744.90	1636520	21282.92	0	0	500	rows_recomputed=32283;fa_targeted=0
+
+# Maximum resident set size (kbytes): 29766352
+# exit=0
+# cmd: ./code/authz ./data/syn1m AZX,TC 10 50 1 100 1000 64 env={'AUTHZ_DEFER_B': '64'}
+# wall_s: 125.7

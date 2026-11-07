@@ -1,0 +1,12 @@
+n 9240304
+m 108338624
+updates 10000
+ctx 6 3 3 3 5
+users 2307085
+groups 6288363
+roles 628836
+resources 16020
+deny_edges 626701
+cond_edges 3391374
+source SNAP com-orkut.all.cmty.txt.gz (gen_snap_lean, max_groups=0)
+nest_edges 5688511

@@ -1,0 +1,11 @@
+n 1100110
+m 1751723
+updates 10000
+ctx 6 3 3 3 5
+users 1000000
+groups 24000
+roles 10000
+resources 66110
+deny_edges 9986
+cond_edges 39002
+source deep-nesting levels=12 width=2000 parents=2

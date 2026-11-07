@@ -1,0 +1,16 @@
+# closure_mean=9.7 closure_max=249 hubs_mean=5.9 (sample 1000 users)
+# build=cdb396bf191d defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=./data/friendster n=8825038 m=24722494 users=7756149 res=16020 updates=100 qpu=10 W=100 B=1000 K=64
+# queries=1000 truth_allow_rate=0.3070
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	1409.1	4.847	4.755	6.520	0.85	0.29	6.86	8	641.52	0	0	1000	masks_per_entry_mean=1.000070;masks_per_entry_max=2;max_coef_log2=3.000000;ack_p99=6.863770;probe_frac=0.000000;label_entries=2854385;prop_nodes=36;prop_trips=89;fa_targeted=0
+BFS	0.0	4.692	4.424	6.574	0.05	0.06	0.09	0	0.00	0	0	1000	;fa_targeted=0
+PLL-noDeny	134030.4	0.489	0.477	0.672	0.07	0.07	0.12	0	1857.26	129	47	1000	rebuilds=1;last_build_ms=134030.062644;fa_cond=91;fa_deny=3;fa_stale=35;fa_targeted=53
+LCR-LI	190.8	4.875	4.703	6.873	0.57	0.23	3.71	4	6.77	0	0	1000	landmarks=64;relabels=0;fa_targeted=0
+# who: AZX mean 115110.1 us p99 126878.8 | BFS mean 73731.6 us p99 84077.0
+# what: AZX mean 12.2 us p99 91.9 | BFS mean 9.1 us p99 65.4 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 6084324
+# exit=0
+# cmd: ./code/authz ./data/friendster AZX,BFS,PLL,LCR 10 100 1 100 1000 64 env={'AUTHZ_DEFER_B': '64'}
+# wall_s: 203.4
