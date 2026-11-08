@@ -880,7 +880,8 @@ if deg:
     if 'real_enwiki' in deg:
         mac('DegEnwRatio', f(spd(deg['real_enwiki']))); mac('CtlEnwRatio', f(spd(ctl['real_enwiki'])))
     # check-time change of FLIX (control / degree-aware) on every graph; >1: the degree-aware test is faster
-    gain = {d: mean_of(ctl[d], 'AZX') / mean_of(deg[d], 'AZX') for d in deg}
+    # gain: change of the within-run BFS/FLIX ratio (each run times both methods, so machine state cancels)
+    gain = {d: spd(deg[d]) / spd(ctl[d]) for d in deg}
     named = {'real_hpo': 'Hpo', 'real_simplewiki': 'Wiki', 'amzn': 'Amzn', 'youtube': 'Youtube', 'real_enwiki': 'Enw'}
     for d, k in named.items():
         if d in deg:
@@ -890,7 +891,7 @@ if deg:
     mac('DegGraphs', str(len(deg)))
     mac('DegFA', fi(sum(int(r['AZX']['false_allow']) + int(r['AZX']['false_deny']) for v in deg.values() for r, _ in v)))
     mac('DegChecks', fi(sum(int(r['AZX']['queries']) for v in deg.values() for r, _ in v)))
-    open(f'{E1D}/summary.tsv', 'w').write('dataset\tseeds\tBFS/FLIX_deg\tBFS/FLIX_ctrl\tFLIX_ctrl/FLIX_deg\n' + ''.join(
+    open(f'{E1D}/summary.tsv', 'w').write('dataset\tseeds\tBFS/FLIX_deg\tBFS/FLIX_ctrl\tgain\n' + ''.join(
         f'{d}\t{len(deg[d])}\t{spd(deg[d]):.3f}\t{spd(ctl[d]):.3f}\t{gain[d]:.3f}\n' for d in deg))
 
 # ================================================================== numbers.tex + sources
@@ -1164,7 +1165,7 @@ for k in REAL:
                     f"{f(bq / aq)}$\\times$ & {f(mean_of(rs, 'AZX', 'u_mean_us'))} & {fi(sum(int(r['AZX']['false_allow']) for r, _ in rs))} \\\\")
     if k in deg:
         rs = deg[k]; bq, aq = mean_of(rs, 'BFS'), mean_of(rs, 'AZX')
-        rows.append(f"{name(k)}$^{{d}}$ & \\multicolumn{{3}}{{r}}{{\\emph{{original test:}} {f(spd(ctl[k]))}$\\times$}} & {f(bq)} & {f(aq)} & {f(bq / aq)}$\\times$ & {f(mean_of(rs, 'AZX', 'u_mean_us'))} & "
+        rows.append(f"{name(k)}$^{{d}}$ & \\multicolumn{{3}}{{r}}{{\\emph{{original test:}} {f(spd(ctl[k]))}$\\times$}} & {f(bq)} & {f(aq)} & {f(bq / aq)}$\\times$ & -- & "
                     f"{fi(sum(int(r['AZX']['false_allow']) for r, _ in rs))} \\\\")
 if not rows:
     rows = [r'\multicolumn{9}{l}{\todo{real hierarchies pending}} \\']
