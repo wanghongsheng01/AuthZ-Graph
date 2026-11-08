@@ -1,0 +1,12 @@
+# deg_mode derived_from=cdb396bf191d
+# closure_mean=5166.9 closure_max=18106 hubs_mean=97.2 (sample 1000 users)
+# build=deg-1527940baa77-wide defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=data/real_enwiki n=2770291 m=11017122 users=354701 res=16020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.8721
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	26835.2	4.599	4.434	8.301	1543.48	0.25	907.55	2898527	13624.03	0	0	100000	masks_per_entry_mean=1.034487;masks_per_entry_max=5;max_coef_log2=95.083530;ack_p99=907.552734;probe_frac=0.000000;label_entries=164216474;prop_nodes=10317038;prop_trips=21188740;fa_targeted=0
+BFS	0.0	202.345	200.338	297.398	0.05	0.05	0.10	7	0.00	0	0	100000	;fa_targeted=0
+# who: AZX mean 458104.6 us p99 868930.3 | BFS mean 146939.8 us p99 207180.5
+# what: AZX mean 292.3 us p99 870.2 | BFS mean 1407.3 us p99 4309.4 | who/what mismatches 0
+# exit=0
+# cmd: code/authz_deg_wide data/real_enwiki AZX,BFS 10 -1 1

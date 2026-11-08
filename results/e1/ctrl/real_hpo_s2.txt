@@ -1,0 +1,11 @@
+# closure_mean=207.9 closure_max=1089 hubs_mean=37.5 (sample 1000 users)
+# build=cdb396bf191d defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=data/real_hpo n=42185 m=329867 users=5277 res=16020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.3714
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	9.9	7.114	6.509	18.880	1.25	0.11	13.97	1144	6.76	0	0	100000	masks_per_entry_mean=1.000304;masks_per_entry_max=2;max_coef_log2=7.754888;ack_p99=13.965820;probe_frac=0.319680;label_entries=55974;prop_nodes=29979;prop_trips=53886;fa_targeted=0
+BFS	0.0	5.432	5.305	9.898	0.05	0.06	0.08	5	0.00	0	0	100000	;fa_targeted=0
+# who: AZX mean 223.1 us p99 801.0 | BFS mean 62.5 us p99 208.2
+# what: AZX mean 27.4 us p99 83.7 | BFS mean 40.1 us p99 143.6 | who/what mismatches 0
+# exit=0
+# cmd: code/authz data/real_hpo AZX,BFS 10 -1 2 100 1000 64

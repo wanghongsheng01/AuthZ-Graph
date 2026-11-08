@@ -1,0 +1,12 @@
+# deg_mode derived_from=cdb396bf191d
+# closure_mean=3423.0 closure_max=4284 hubs_mean=391.0 (sample 1000 users)
+# build=deg-1527940baa77 defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=data/deep_L12 n=137020 m=221565 users=100000 res=12020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.8337
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	207.9	3.571	3.567	4.961	154.93	0.21	3533.24	15837	119.02	0	0	100000	masks_per_entry_mean=1.034216;masks_per_entry_max=4;max_coef_log2=5.000000;ack_p99=3533.240723;probe_frac=0.955370;label_entries=1370495;prop_nodes=1543261;prop_trips=2664580;fa_targeted=0
+BFS	0.0	54.572	54.801	66.678	0.05	0.06	0.09	7	0.00	0	0	100000	;fa_targeted=0
+# who: AZX mean 14625.7 us p99 26163.9 | BFS mean 5646.2 us p99 28630.8
+# what: AZX mean 235.2 us p99 301.3 | BFS mean 525.3 us p99 827.9 | who/what mismatches 0
+# exit=0
+# cmd: code/authz_deg data/deep_L12 AZX,BFS 10 -1 2 100 1000 64

@@ -1,0 +1,11 @@
+# closure_mean=109.6 closure_max=1612 hubs_mean=73.8 (sample 1000 users)
+# build=cdb396bf191d defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=data/orkut n=9240304 m=108338624 users=2307085 res=16020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.6950
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	8842.4	61.115	60.121	90.187	1.84	0.29	14.39	1818	2179.41	0	0	100000	masks_per_entry_mean=1.000013;masks_per_entry_max=2;max_coef_log2=3.000000;ack_p99=14.389648;probe_frac=0.000000;label_entries=27823041;prop_nodes=14670;prop_trips=28754;fa_targeted=0
+BFS	0.0	85.105	82.641	153.323	0.05	0.06	0.08	9	0.00	0	0	100000	;fa_targeted=0
+# who: AZX mean 679345.5 us p99 724603.0 | BFS mean 204935.9 us p99 218313.9
+# what: AZX mean 80.0 us p99 378.4 | BFS mean 74.4 us p99 410.0 | who/what mismatches 0
+# exit=0
+# cmd: code/authz data/orkut AZX,BFS 10 -1 1 100 1000 64

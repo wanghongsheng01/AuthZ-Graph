@@ -1,0 +1,11 @@
+# closure_mean=57.0 closure_max=829 hubs_mean=6.3 (sample 1000 users)
+# build=cdb396bf191d defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=data/real_go_m4 n=114439 m=465721 users=38821 res=16020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.1381
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	46.6	0.410	0.402	0.590	5.99	0.15	98.80	2407	25.64	0	0	100000	masks_per_entry_mean=1.001630;masks_per_entry_max=3;max_coef_log2=7.276124;ack_p99=98.797852;probe_frac=0.000000;label_entries=249638;prop_nodes=127789;prop_trips=198480;fa_targeted=0
+BFS	0.0	1.644	1.509	3.874	0.05	0.06	0.09	8	0.00	0	0	100000	;fa_targeted=0
+# who: AZX mean 348.1 us p99 708.9 | BFS mean 139.0 us p99 360.2
+# what: AZX mean 6.5 us p99 44.3 | BFS mean 11.6 us p99 83.2 | who/what mismatches 0
+# exit=0
+# cmd: code/authz data/real_go_m4 AZX,BFS 10 -1 2 100 1000 64

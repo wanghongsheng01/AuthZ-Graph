@@ -1,0 +1,11 @@
+# closure_mean=94.6 closure_max=250 hubs_mean=58.8 (sample 1000 users)
+# build=cdb396bf191d defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=data/syn10m n=11007010 m=22050043 users=10000000 res=607010 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.3328
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	1670.2	1.427	1.405	2.358	7.92	0.24	108.96	6501	1279.24	0	0	100000	masks_per_entry_mean=1.000246;masks_per_entry_max=2;max_coef_log2=1.584963;ack_p99=108.959473;probe_frac=0.000020;label_entries=10676864;prop_nodes=38818;prop_trips=325960;fa_targeted=0
+BFS	0.0	4.651	4.559	7.416	0.05	0.06	0.13	9	0.00	0	0	100000	;fa_targeted=0
+# who: AZX mean 17769.1 us p99 169434.1 | BFS mean 12383.3 us p99 112946.3
+# what: AZX mean 150.3 us p99 355.0 | BFS mean 116.3 us p99 347.1 | who/what mismatches 0
+# exit=0
+# cmd: code/authz data/syn10m AZX,BFS 10 -1 1 100 1000 64

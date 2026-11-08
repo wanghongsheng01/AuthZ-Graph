@@ -1,0 +1,11 @@
+# closure_mean=9.5 closure_max=44 hubs_mean=2.0 (sample 1000 users)
+# build=cdb396bf191d defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=data/amzn n=67426 m=527936 users=36062 res=21581 updates=19406 qpu=10 W=100 B=1000 K=64
+# queries=194060 truth_allow_rate=0.0593
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	4.7	0.311	0.209	1.942	0.04	0.03	0.12	8	3.82	0	0	194060	masks_per_entry_mean=1.000000;masks_per_entry_max=1;max_coef_log2=0.000000;ack_p99=0.119141;probe_frac=0.057590;label_entries=4282;prop_nodes=0;prop_trips=0;fa_targeted=0
+BFS	0.0	0.223	0.203	0.675	0.03	0.03	0.05	8	0.00	0	0	194060	;fa_targeted=0
+# who: AZX mean 1.9 us p99 12.2 | BFS mean 1.1 us p99 5.3
+# what: AZX mean 0.7 us p99 4.9 | BFS mean 1.0 us p99 5.1 | who/what mismatches 0
+# exit=0
+# cmd: code/authz data/amzn AZX,BFS 10 -1 2 100 1000 64

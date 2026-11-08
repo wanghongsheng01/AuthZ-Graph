@@ -1,0 +1,11 @@
+# closure_mean=9.2 closure_max=180 hubs_mean=5.1 (sample 1000 users)
+# build=cdb396bf191d defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=data/dblp n=291842 m=773691 users=260998 res=16020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.2527
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	16.4	0.349	0.333	0.637	0.34	0.10	2.99	73	17.82	0	0	100000	masks_per_entry_mean=1.000413;masks_per_entry_max=2;max_coef_log2=1.000000;ack_p99=2.989746;probe_frac=0.000110;label_entries=33922;prop_nodes=5148;prop_trips=10029;fa_targeted=0
+BFS	0.0	0.453	0.421	1.113	0.05	0.04	0.06	0	0.00	0	0	100000	;fa_targeted=0
+# who: AZX mean 1791.5 us p99 3560.0 | BFS mean 673.0 us p99 1326.1
+# what: AZX mean 6.9 us p99 46.2 | BFS mean 6.5 us p99 50.4 | who/what mismatches 0
+# exit=0
+# cmd: code/authz data/dblp AZX,BFS 10 -1 2 100 1000 64

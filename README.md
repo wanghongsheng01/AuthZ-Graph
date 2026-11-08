@@ -16,6 +16,8 @@ This repository contains the prototype (FLIX), all baselines, the workload gener
 | `scripts/parse_amzn.py` | Streams the UCI Amazon archive without extracting it (the wide CSV is 4.8 GB). |
 | `results/rev2/` | Raw outputs behind every table in the paper. Each file starts with `# build=cdb396bf191d` (`-wide` for English Wikipedia). `results/rev2/meta/` holds the dataset sizes and the revocation counts of the update streams, so that the numbers can be regenerated without the datasets. |
 | `results/erp/`, `code/make_erp_replay.py` | Raw outputs of the production ERP case study (Section VI-H). The ERP export is de-identified enterprise data and is not released, nor is the script that builds the graph from it. The replay driver `code/erp_replay.cpp` is generated from the unchanged `code/authz.cpp` by `make_erp_replay.py`; its only change is that checks other than new-enemy probes are sampled from a page-access trace (`qtrace.bin`). |
+| `results/e1/`, `code/make_degmode.py`, `scripts/server/e1_*.sh` | The degree-aware probe/scan test (Section VI-G, rows marked $^d$ in Table IX). `make_degmode.py` generates `code/authz_deg.cpp` from the unchanged `code/authz.cpp`; its only change is the mode test `4*c_in*deg+(u) < c_lab`. `results/e1/main` runs it with FLIX and BFS on every graph of the main runs; `results/e1/ctrl` runs the unchanged binary with the same two methods and arguments, so that both tests are compared under the same conditions. `results/e1/summary.tsv` lists both ratios per graph. |
+| `code/check_topo.py` | Checks that every graph and update stream keeps subject identifiers in topological order (Section IV-D); all 27 graphs pass. |
 | `results/sql/`, `results/server/meta/`, `results/real/` | The SQLite cross-check of the pilot runs (stated as such in the paper) and the size metadata of the server-scale and English Wikipedia graphs. |
 
 ## Build
@@ -70,15 +72,16 @@ Every check is compared against the online oracle. The `false_allow` and `false_
 ## Regenerate the paper's numbers
 
 ```bash
-pip install numpy matplotlib
-AUTHZ_RESULTS=results/rev2 AUTHZ_ERP_RESULTS=results/erp python3 code/paper_facts.py
+pip install -r requirements.txt
+AUTHZ_RESULTS=results/rev2 AUTHZ_ERP_RESULTS=results/erp AUTHZ_E1_RESULTS=results/e1 python3 code/paper_facts.py
 ```
 
-This writes `paper/numbers.tex` (all macros, including those of the ERP case study), `paper/tables/*.tex` and `paper/figs/*.pdf` from `results/rev2/` alone; no dataset is needed. `paper/numbers_sources.txt` lists the raw file behind each macro.
+This writes `paper/numbers.tex` (all macros, including those of the ERP case study and of the degree-aware test), `paper/tables/*.tex` and `paper/figs/*.pdf` from `results/rev2/` alone; no dataset is needed. `paper/numbers_sources.txt` lists the raw file behind each macro.
 
 ## Hardware used
 
-- An Intel Xeon Platinum 8336C server (28 hardware threads, 110 GB RAM, Ubuntu 22.04, g++ 11.4) for all `results/rev2` runs.
+- An Intel Xeon Platinum 8336C server (28 hardware threads, 110 GB RAM, Ubuntu 22.04, g++ 11.4) for all `results/rev2` and `results/e1` runs (`results/e1` ran one job at a time on the otherwise idle server).
+- Python 3.9 with the packages in `requirements.txt` to regenerate numbers, tables and figures.
 - An Apple M-series laptop (16 GB) for the pilot runs.
 
 All runs are single-threaded; several runs were executed concurrently on the server.

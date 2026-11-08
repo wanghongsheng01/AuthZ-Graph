@@ -1,0 +1,11 @@
+# closure_mean=9956.9 closure_max=11071 hubs_mean=2530.1 (sample 1000 users)
+# build=cdb396bf191d defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=data/deep1m_L16 n=1108110 m=1768385 users=1000000 res=66110 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.6061
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	2800.0	7.937	7.915	11.364	2246.29	0.29	57679.61	231027	1292.53	0	0	100000	masks_per_entry_mean=1.017175;masks_per_entry_max=5;max_coef_log2=7.044394;ack_p99=57679.605957;probe_frac=0.986990;label_entries=18141407;prop_nodes=3754132;prop_trips=10121772;fa_targeted=0
+BFS	0.0	304.054	306.184	343.085	0.06	0.06	0.17	8	0.00	0	0	100000	;fa_targeted=0
+# who: AZX mean 151795.1 us p99 271922.4 | BFS mean 98550.1 us p99 237700.3
+# what: AZX mean 1303.1 us p99 1415.7 | BFS mean 2562.7 us p99 3021.7 | who/what mismatches 0
+# exit=0
+# cmd: code/authz data/deep1m_L16 AZX,BFS 10 -1 1 100 1000 64

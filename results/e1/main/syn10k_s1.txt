@@ -1,0 +1,12 @@
+# deg_mode derived_from=cdb396bf191d
+# closure_mean=20.1 closure_max=51 hubs_mean=12.2 (sample 1000 users)
+# build=deg-1527940baa77 defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch
+# data=data/syn10k n=17011 m=27874 users=10000 res=6611 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.5031
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	0.9	0.305	0.299	0.419	0.41	0.08	5.57	40	1.22	0	0	100000	masks_per_entry_mean=1.029268;masks_per_entry_max=2;max_coef_log2=3.321928;ack_p99=5.572266;probe_frac=0.001570;label_entries=2050;prop_nodes=9089;prop_trips=20248;fa_targeted=0
+BFS	0.0	0.592	0.573	1.045	0.05	0.06	0.06	7	0.00	0	0	100000	;fa_targeted=0
+# who: AZX mean 125.8 us p99 301.1 | BFS mean 38.7 us p99 122.9
+# what: AZX mean 7.2 us p99 27.6 | BFS mean 7.7 us p99 29.0 | who/what mismatches 0
+# exit=0
+# cmd: code/authz_deg data/syn10k AZX,BFS 10 -1 1 100 1000 64
