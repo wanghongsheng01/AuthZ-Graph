@@ -1011,6 +1011,8 @@ if bib:
             mac(f'Bib{k}OverBfs', f(bb[d])); mac(f'Bib{k}Flix', f(fb[d])); mac(f'Bib{k}Best', f(fo[d]))
     slower = [d for d in GR4 if d in fo and fo[d] < 1]
     mac('BibFlixSlowerCount', str(len(slower))); mac('BibFlixSlowerList', ', '.join(NAME[d] for d in slower) or 'none')
+    # gap between FLIX and the faster online method where FLIX is not the fastest (v7 text, plan 24_ D4)
+    mac('BibFlixSlowerGapNs', f'{max((mean_of(bib[d], "AZX") - min(mean_of(bib[d], "BFS"), mean_of(bib[d], "BIBFS"))) * 1000 for d in slower):.0f}' if slower else '0')
     deep = [d for d in DEEP + REAL + SERVER if d in fo and d not in ('lj_full', 'friendster', 'syn10m', 'orkut')]
     mac('BibFA', fi(sum(int(r['BIBFS']['false_allow']) + int(r['BIBFS']['false_deny']) for v in bib.values() for r, _ in v)))
     mac('BibChecks', fi(sum(int(r['BIBFS']['queries']) for v in bib.values() for r, _ in v)))
@@ -1087,6 +1089,8 @@ def erp4(nm, need):
 eb = [x for x in (erp4(f'bibfs_s{i}', ['AZX', 'BFS', 'BIBFS']) for i in (1, 2, 3)) if x]
 if eb:
     mac('ErpBibOverBfs', f(mean_of(eb, 'BFS') / mean_of(eb, 'BIBFS'))); mac('ErpBibFlix', f(mean_of(eb, 'BIBFS') / mean_of(eb, 'AZX')))
+    # absolute means of the three methods from the same ERP runs (v7 text, plan 24_ D3)
+    mac('ErpFourAZX', f'{mean_of(eb, "AZX"):.2f}'); mac('ErpFourBFS', f'{mean_of(eb, "BFS"):.2f}'); mac('ErpFourBib', f'{mean_of(eb, "BIBFS"):.2f}')
 ek = [x for x in (erp4(f'kconst_s{i}', ['AZX'] + [f'AZX-K{c}' for c in KS]) for i in (1, 2, 3)) if x]
 if ek:
     er = [mean_of(ek, f'AZX-K{c}') / mean_of(ek, 'AZX') for c in KS]
