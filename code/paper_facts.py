@@ -936,6 +936,162 @@ if abl:
         f'{d}\t{len(abl[d])}\t{mean_of(abl[d], "AZX"):.3f}\t{mean_of(abl[d], "AZX-NODEG"):.3f}\t{mean_of(abl[d], "BFS"):.3f}\t{nod[d]:.3f}\t'
         f'{mean_of(abl[d], "BFS") / mean_of(abl[d], "AZX"):.3f}\t{old[d]:.3f}\n' for d in abl))
 
+# ------------------------------------------------------------------ revision 4: BiBFS and the probe/scan constant
+# results_rev4 (AUTHZ_RESULTS4), one build (AUTHZ_EXPECT_BUILD4) of the same source file plus BIBFS, the AZX-K<c>
+# instances and AUTHZ_SHUFFLE; the methods are timed in a fresh random order for every update. The rev4 build makes the same
+# decisions as the rev3 build: the counters of AZX (probe fraction, label entries, false allows/denies, queries)
+# must equal those of the rev3 main run with the same graph and seed, otherwise the script aborts.
+section()
+REV4 = f"{ROOT}/{os.environ.get('AUTHZ_RESULTS4', 'results_rev4')}"
+EXPECT_BUILD4 = os.environ.get('AUTHZ_EXPECT_BUILD4', '9cc732b8a369')
+TREE4 = os.path.relpath(REV4, ROOT)
+
+
+def load4(group, nm, need):
+    p = f'{REV4}/{group}/{nm}.txt'
+    r, info = parse(p)
+    if not (r and all(m in r for m in need)):
+        MISSING.append(f'rev4/{group}/{nm}'); return None
+    b = info.get('build')
+    if b not in (EXPECT_BUILD4, EXPECT_BUILD4 + '-wide'):
+        raise SystemExit(f'paper_facts: {p} was produced by build {b}, expected {EXPECT_BUILD4}')
+    BUILDS[b] = BUILDS.get(b, 0) + 1
+    CUR.add(f'{TREE4}/{group}')
+    return r, info
+
+
+SAME = ['false_allow', 'false_deny', 'queries']
+SAMEX = ['probe_frac', 'label_entries']
+nsame = 0
+
+
+def same_as_rev3(d, s_, r4):
+    """AZX of a rev4 run must reproduce the counters of AZX in the rev3 main run of the same graph and seed."""
+    global nsame
+    r3, _ = parse(f'{REV}/main/{d}_s{s_}.txt')
+    if not r3 or 'AZX' not in r3:
+        return
+    a, b = r3['AZX'], r4['AZX']
+    for k in SAME:
+        if str(a[k]) != str(b[k]):
+            raise SystemExit(f'paper_facts: rev4 {d}_s{s_} AZX {k}={b[k]} differs from rev3 main ({a[k]})')
+    for k in SAMEX:
+        if str(a['x'].get(k)) != str(b['x'].get(k)):
+            raise SystemExit(f'paper_facts: rev4 {d}_s{s_} AZX {k}={b["x"].get(k)} differs from rev3 main ({a["x"].get(k)})')
+    nsame += 1
+
+
+GR4 = DATA + SERVER + REAL
+SEEDS4 = lambda d: (1,) if d in ('syn1m', 'lj') or d in SERVER else (1, 2, 3)
+bib = {}
+for d in GR4:
+    rs = []
+    for s_ in SEEDS4(d):
+        x = load4('bibfs', f'{d}_s{s_}', ['AZX', 'BFS', 'BIBFS'])
+        if x:
+            same_as_rev3(d, s_, x[0]); rs.append(x)
+    if rs:
+        bib[d] = rs
+if bib:
+    bb = {d: mean_of(rs, 'BFS') / mean_of(rs, 'BIBFS') for d, rs in bib.items()}       # >1: BiBFS faster than BFS
+    fb = {d: mean_of(rs, 'BIBFS') / mean_of(rs, 'AZX') for d, rs in bib.items()}       # >1: FLIX faster than BiBFS
+    fo = {d: min(mean_of(rs, 'BFS'), mean_of(rs, 'BIBFS')) / mean_of(rs, 'AZX') for d, rs in bib.items()}
+    faster = [d for d in GR4 if d in bb and bb[d] > 1]
+    mac('BibGraphs', str(len(bib)))
+    mac('BibFasterCount', str(len(faster))); mac('BibSlowerCount', str(len(bib) - len(faster)))
+    mac('BibFasterList', ', '.join(NAME[d] for d in faster))
+    mac('BibOverBfsMin', f(min(bb.values()))); mac('BibOverBfsMax', f(max(bb.values())))
+    mac('BibOverBfsMaxName', NAME[max(bb, key=bb.get)])
+    mac('BibUnderBfsMax', f(1 / min(bb.values()))); mac('BibUnderBfsMaxName', NAME[min(bb, key=bb.get)])
+    mac('BibFlixMin', f(min(fb.values()))); mac('BibFlixMax', f(max(fb.values())))
+    mac('BibFlixMinName', NAME[min(fb, key=fb.get)]); mac('BibFlixMaxName', NAME[max(fb, key=fb.get)])
+    for d, k in {'deep_L8': 'DeepEight', 'deep_L12': 'DeepTwelve', 'deep_L16': 'DeepSixteen', 'deep1m_L16': 'SrvSixteen',
+                 'real_enwiki': 'Enw', 'real_hpo': 'Hpo', 'real_go': 'Go', 'real_simplewiki': 'Wiki', 'orkut': 'Orkut'}.items():
+        if d in bib:
+            mac(f'Bib{k}OverBfs', f(bb[d])); mac(f'Bib{k}Flix', f(fb[d])); mac(f'Bib{k}Best', f(fo[d]))
+    slower = [d for d in GR4 if d in fo and fo[d] < 1]
+    mac('BibFlixSlowerCount', str(len(slower))); mac('BibFlixSlowerList', ', '.join(NAME[d] for d in slower) or 'none')
+    deep = [d for d in DEEP + REAL + SERVER if d in fo and d not in ('lj_full', 'friendster', 'syn10m', 'orkut')]
+    mac('BibFA', fi(sum(int(r['BIBFS']['false_allow']) + int(r['BIBFS']['false_deny']) for v in bib.values() for r, _ in v)))
+    mac('BibChecks', fi(sum(int(r['BIBFS']['queries']) for v in bib.values() for r, _ in v)))
+    os.makedirs(f'{REV4}/summary', exist_ok=True)
+    open(f'{REV4}/summary/bibfs.tsv', 'w').write('dataset\tseeds\tFLIX_us\tBFS_us\tBIBFS_us\tBFS/BIBFS\tBIBFS/FLIX\tmin(BFS,BIBFS)/FLIX\tBIBFS_visited\n' + ''.join(
+        f'{d}\t{len(bib[d])}\t{mean_of(bib[d], "AZX"):.3f}\t{mean_of(bib[d], "BFS"):.3f}\t{mean_of(bib[d], "BIBFS"):.3f}\t{bb[d]:.3f}\t'
+        f'{fb[d]:.3f}\t{fo[d]:.3f}\t{xmean(bib[d], "BIBFS", "visited_mean"):.1f}\n' for d in bib))
+# depth sweep with BiBFS (same seeds and prefix as sweep_depth)
+bd = {}
+for L in (2, 4, 8, 12, 16):
+    rs = [x for x in (load4('sweep_depth_bibfs', f'deep_L{L}_s{s_}', ['AZX', 'BFS', 'BIBFS']) for s_ in (1, 2, 3)) if x]
+    if rs:
+        bd[L] = rs
+for L, k in ((2, 'Two'), (4, 'Four'), (8, 'Eight'), (12, 'Twelve'), (16, 'Sixteen')):
+    if L in bd:
+        mac(f'BibDepth{k}OverBfs', f(mean_of(bd[L], 'BFS') / mean_of(bd[L], 'BIBFS')))
+        mac(f'BibDepth{k}Flix', f(mean_of(bd[L], 'BIBFS') / mean_of(bd[L], 'AZX')))
+# probe/scan constant: AZX-K<c> / AZX (constant 4), in process; enwiki: two processes (K1,K2 | K8,K16).
+# A constant whose instance probes exactly the same checks as constant 4 (equal probe fraction in every seed)
+# makes the same decisions; its time ratio then measures the noise between two instances (KcNoise*), and it
+# counts as equal to 4 when the best constant of a graph is determined.
+KS = (1, 2, 8, 16)
+kc, kp = {}, {}
+def same_probes(rs, c):
+    return all(r['AZX']['x'].get('probe_frac') == r[f'AZX-K{c}']['x'].get('probe_frac') for r, _ in rs)
+for d in GR4:
+    if d == 'real_enwiki':
+        a = load4('kconst', 'real_enwiki_a_s1', ['AZX', 'AZX-K1', 'AZX-K2'])
+        b = load4('kconst', 'real_enwiki_b_s1', ['AZX', 'AZX-K8', 'AZX-K16'])
+        if a and b:
+            kc[d] = {c: x[0][f'AZX-K{c}']['q_mean_us'] / x[0]['AZX']['q_mean_us'] for c, x in ((1, a), (2, a), (8, b), (16, b))}
+            kp[d] = {c: same_probes([x], c) for c, x in ((1, a), (2, a), (8, b), (16, b))}
+        continue
+    rs = [x for x in (load4('kconst', f'{d}_s{s_}', ['AZX'] + [f'AZX-K{c}' for c in KS]) for s_ in SEEDS4(d)) if x]
+    if rs:
+        kc[d] = {c: mean_of(rs, f'AZX-K{c}') / mean_of(rs, 'AZX') for c in KS}
+        kp[d] = {c: same_probes(rs, c) for c in KS}
+if kc:
+    noise = [kc[d][c] for d in kc for c in KS if kp[d][c]]
+    eff = {d: {c: kc[d][c] for c in KS if not kp[d][c]} for d in kc}      # constants that change decisions
+    best = {d: min([1.0] + list(eff[d].values())) for d in kc}             # best constant relative to 4
+    over = {d: 1 / best[d] for d in kc}
+    allr = [v for d in eff for v in eff[d].values()]
+    mac('KcGraphs', str(len(kc)))
+    mac('KcNoiseMin', f(min(noise))); mac('KcNoiseMax', f(max(noise)))
+    mac('KcChangedGraphs', str(sum(1 for d in eff if eff[d])))
+    mac('KcSameGraphs', str(sum(1 for d in eff if not eff[d])))
+    mac('KcMin', f(min(allr))); mac('KcMax', f(max(allr)))
+    mac('KcMaxName', NAME[max(eff, key=lambda d: max(eff[d].values(), default=0))])
+    small = {d: max([eff[d][c] for c in (1, 2) if c in eff[d]], default=None) for d in eff}
+    large = {d: max([eff[d][c] for c in (8, 16) if c in eff[d]], default=None) for d in eff}
+    small = {d: v for d, v in small.items() if v is not None}; large = {d: v for d, v in large.items() if v is not None}
+    mac('KcSmallMax', f(max(small.values()))); mac('KcSmallMaxName', NAME[max(small, key=small.get)])
+    mac('KcLargeMax', f(max(large.values()))); mac('KcLargeMaxName', NAME[max(large, key=large.get)])
+    mac('KcFourOverBestMax', f(max(over.values()))); mac('KcFourOverBestMaxName', NAME[max(over, key=over.get)])
+    mac('KcFourOverBestPct', f'{100 * (max(over.values()) - 1):.0f}')
+    for d, k in {'real_hpo': 'Hpo', 'real_enwiki': 'Enw', 'deep_L12': 'DeepTwelve', 'deep_L16': 'DeepSixteen', 'real_simplewiki': 'Wiki', 'deep1m_L16': 'SrvSixteen'}.items():
+        if d in kc:
+            for c, w in zip(KS, ('One', 'Two', 'Eight', 'Sixteen')):
+                mac(f'Kc{k}K{w}', f(kc[d][c]))
+    open(f'{REV4}/summary/kconst.tsv', 'w').write('dataset\t' + '\t'.join(f'K{c}/K4' for c in KS) + '\t' + '\t'.join(f'K{c}_same_probes' for c in KS) + '\tK4/best\n' + ''.join(
+        f'{d}\t' + '\t'.join(f'{kc[d][c]:.3f}' for c in KS) + '\t' + '\t'.join(str(int(kp[d][c])) for c in KS) + f'\t{over[d]:.3f}\n' for d in kc))
+mac('RevFourSameRuns', str(nsame))
+# ERP: the same additions on the replayed production graph (results_erp4, derived from the rev4 build)
+ERPD4 = f"{ROOT}/{os.environ.get('AUTHZ_ERP_RESULTS4', 'results_erp4')}"
+def erp4(nm, need):
+    p = f'{ERPD4}/{nm}.txt'
+    rr, info = parse(p)
+    if not (rr and all(m in rr for m in need)):
+        MISSING.append(f'erp4/{nm}'); return None
+    if not (info.get('build', '').startswith('erp-') and f'derived_from={EXPECT_BUILD4}' in open(p).read()):
+        raise SystemExit(f'{p}: unexpected build {info.get("build")}')
+    CUR.add(os.path.relpath(ERPD4, ROOT)); return rr, info
+eb = [x for x in (erp4(f'bibfs_s{i}', ['AZX', 'BFS', 'BIBFS']) for i in (1, 2, 3)) if x]
+if eb:
+    mac('ErpBibOverBfs', f(mean_of(eb, 'BFS') / mean_of(eb, 'BIBFS'))); mac('ErpBibFlix', f(mean_of(eb, 'BIBFS') / mean_of(eb, 'AZX')))
+ek = [x for x in (erp4(f'kconst_s{i}', ['AZX'] + [f'AZX-K{c}' for c in KS]) for i in (1, 2, 3)) if x]
+if ek:
+    er = [mean_of(ek, f'AZX-K{c}') / mean_of(ek, 'AZX') for c in KS]
+    mac('ErpKcMin', f(min(er))); mac('ErpKcMax', f(max(er)))
+
 # ================================================================== numbers.tex + sources
 with open(f'{PAPER}/numbers.tex', 'w') as fh:
     fh.write('% generated by code/paper_facts.py -- do not edit\n')

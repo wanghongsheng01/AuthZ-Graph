@@ -1,0 +1,36 @@
+# closure_mean=5166.9 closure_max=18106 hubs_mean=97.2 (sample 1000 users)
+# build=9cc732b8a369-wide defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch,shuffle probe_test=deg
+# data=/root/authz_graph_icde27/rev4/data/real_enwiki n=2770291 m=11017122 users=354701 res=16020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.8721
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	26653.5	4.319	4.141	8.122	1609.08	0.23	934.25	3071213	13624.03	0	0	100000	masks_per_entry_mean=1.034487;masks_per_entry_max=5;max_coef_log2=95.083530;ack_p99=934.245117;probe_frac=0.000000;label_entries=164216474;prop_nodes=10317038;prop_trips=21188740;fa_targeted=0
+AZX-K1	26603.8	6.891	6.430	15.634	1580.06	0.18	774.58	2933761	13624.03	0	0	100000	masks_per_entry_mean=1.034487;masks_per_entry_max=5;max_coef_log2=95.083530;ack_p99=774.582031;probe_frac=0.323410;label_entries=164216474;prop_nodes=10317038;prop_trips=21188740;fa_targeted=0
+AZX-K2	26583.8	4.309	4.138	8.089	1561.68	0.19	754.13	2960852	13624.03	0	0	100000	masks_per_entry_mean=1.034487;masks_per_entry_max=5;max_coef_log2=95.083530;ack_p99=754.125977;probe_frac=0.001310;label_entries=164216474;prop_nodes=10317038;prop_trips=21188740;fa_targeted=0
+BFS	0.0	215.444	213.400	317.066	0.06	0.06	0.14	7	0.00	0	0	100000	;fa_targeted=0
+# who: AZX mean 462405.2 us p99 879656.6 | BFS mean 151798.0 us p99 215307.6
+# what: AZX mean 266.3 us p99 737.6 | BFS mean 1637.2 us p99 5183.1 | who/what mismatches 0
+	Command being timed: "nice -n 10 /root/authz_graph_icde27/rev4/code/authz_wide /root/authz_graph_icde27/rev4/data/real_enwiki AZX,AZX-K1,AZX-K2,BFS 10 -1 1"
+	User time (seconds): 369.57
+	System time (seconds): 16.20
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 6:25.81
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 51176348
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 11961847
+	Voluntary context switches: 41
+	Involuntary context switches: 1015
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+# exit=0
+# cmd: /root/authz_graph_icde27/rev4/data/real_enwiki AZX,AZX-K1,AZX-K2,BFS 10 -1 1 env=AUTHZ_DEFER_B=64,AUTHZ_SHUFFLE=1 (enwiki phase)

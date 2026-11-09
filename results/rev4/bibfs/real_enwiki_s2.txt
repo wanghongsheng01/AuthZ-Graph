@@ -1,0 +1,35 @@
+# closure_mean=5303.8 closure_max=17626 hubs_mean=99.3 (sample 1000 users)
+# build=9cc732b8a369-wide defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch,shuffle probe_test=deg
+# data=/root/authz_graph_icde27/rev4/data/real_enwiki n=2770291 m=11017122 users=354701 res=16020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.8720
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	26726.5	4.962	4.791	8.987	1594.47	0.25	957.66	3007992	13624.03	0	0	100000	masks_per_entry_mean=1.034487;masks_per_entry_max=5;max_coef_log2=95.083530;ack_p99=957.664062;probe_frac=0.000000;label_entries=164216474;prop_nodes=10317038;prop_trips=21188740;fa_targeted=0
+BFS	0.0	204.902	202.935	304.013	0.05	0.05	0.13	8	0.00	0	0	100000	;fa_targeted=0
+BIBFS	0.0	82.471	79.048	166.123	0.05	0.03	0.07	10	0.00	0	0	100000	visited_mean=2126.076260;fa_targeted=0
+# who: AZX mean 485772.4 us p99 940847.4 | BFS mean 163907.8 us p99 248876.4
+# what: AZX mean 343.9 us p99 1011.0 | BFS mean 1999.3 us p99 6372.8 | who/what mismatches 0
+	Command being timed: "nice -n 10 /root/authz_graph_icde27/rev4/code/authz_wide /root/authz_graph_icde27/rev4/data/real_enwiki AZX,BFS,BIBFS 10 -1 2"
+	User time (seconds): 294.23
+	System time (seconds): 5.77
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 5:00.00
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 17886216
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 4117010
+	Voluntary context switches: 2
+	Involuntary context switches: 371
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+# exit=0
+# cmd: /root/authz_graph_icde27/rev4/data/real_enwiki AZX,BFS,BIBFS 10 -1 2 env=AUTHZ_DEFER_B=64,AUTHZ_SHUFFLE=1 (enwiki phase)

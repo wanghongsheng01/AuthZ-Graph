@@ -1,0 +1,18 @@
+# closure_mean=109.6 closure_max=1612 hubs_mean=73.8 (sample 1000 users)
+# build=9cc732b8a369 defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch,shuffle probe_test=deg
+# data=/root/authz_graph_icde27/rev4/data/orkut n=9240304 m=108338624 users=2307085 res=16020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.6950
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	11492.4	57.603	56.344	93.383	2.37	0.27	20.34	3203	2179.41	0	0	100000	masks_per_entry_mean=1.000013;masks_per_entry_max=2;max_coef_log2=3.000000;ack_p99=20.339844;probe_frac=0.000000;label_entries=27823041;prop_nodes=14670;prop_trips=28754;fa_targeted=0
+AZX-K1	11152.9	57.775	56.556	93.624	1.73	0.24	12.01	2194	2179.41	0	0	100000	masks_per_entry_mean=1.000013;masks_per_entry_max=2;max_coef_log2=3.000000;ack_p99=12.013184;probe_frac=0.000000;label_entries=27823041;prop_nodes=14670;prop_trips=28754;fa_targeted=0
+AZX-K2	11167.4	57.700	56.516	94.786	1.65	0.23	11.85	2228	2179.41	0	0	100000	masks_per_entry_mean=1.000013;masks_per_entry_max=2;max_coef_log2=3.000000;ack_p99=11.853027;probe_frac=0.000000;label_entries=27823041;prop_nodes=14670;prop_trips=28754;fa_targeted=0
+AZX-K8	11127.1	58.093	56.762	94.469	1.62	0.27	11.17	2270	2179.41	0	0	100000	masks_per_entry_mean=1.000013;masks_per_entry_max=2;max_coef_log2=3.000000;ack_p99=11.170898;probe_frac=0.000000;label_entries=27823041;prop_nodes=14670;prop_trips=28754;fa_targeted=0
+AZX-K16	11058.5	57.771	56.545	94.374	1.60	0.26	11.29	2301	2179.41	0	0	100000	masks_per_entry_mean=1.000013;masks_per_entry_max=2;max_coef_log2=3.000000;ack_p99=11.289551;probe_frac=0.000000;label_entries=27823041;prop_nodes=14670;prop_trips=28754;fa_targeted=0
+BFS	0.0	83.591	81.324	153.306	0.08	0.06	0.30	1	0.00	0	0	100000	;fa_targeted=0
+# who: AZX mean 693181.0 us p99 742954.6 | BFS mean 225695.3 us p99 244050.4
+# what: AZX mean 80.7 us p99 401.6 | BFS mean 74.4 us p99 403.5 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 24098892
+# exit=0
+# cmd: /root/authz_graph_icde27/rev4/code/authz /root/authz_graph_icde27/rev4/data/orkut AZX,AZX-K1,AZX-K2,AZX-K8,AZX-K16,BFS 10 -1 1 100 1000 64 env={'AUTHZ_DEFER_B': '64', 'AUTHZ_SHUFFLE': '1'}
+# wall_s: 417.5

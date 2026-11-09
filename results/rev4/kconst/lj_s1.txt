@@ -1,0 +1,18 @@
+# closure_mean=16.8 closure_max=215 hubs_mean=10.4 (sample 1000 users)
+# build=9cc732b8a369 defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch,shuffle probe_test=deg
+# data=/root/authz_graph_icde27/rev4/data/lj n=1311032 m=6750856 users=1075012 res=16020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.3796
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	205.6	1.600	1.457	3.563	1.11	0.23	10.00	377	107.19	0	0	100000	masks_per_entry_mean=1.000150;masks_per_entry_max=2;max_coef_log2=1.000000;ack_p99=10.002930;probe_frac=0.000000;label_entries=612208;prop_nodes=7822;prop_trips=19074;fa_targeted=0
+AZX-K1	197.1	1.599	1.453	3.440	0.89	0.15	7.35	336	107.19	0	0	100000	masks_per_entry_mean=1.000150;masks_per_entry_max=2;max_coef_log2=1.000000;ack_p99=7.354004;probe_frac=0.000000;label_entries=612208;prop_nodes=7822;prop_trips=19074;fa_targeted=0
+AZX-K2	201.8	1.595	1.451	3.482	0.81	0.15	6.52	338	107.19	0	0	100000	masks_per_entry_mean=1.000150;masks_per_entry_max=2;max_coef_log2=1.000000;ack_p99=6.520020;probe_frac=0.000000;label_entries=612208;prop_nodes=7822;prop_trips=19074;fa_targeted=0
+AZX-K8	197.9	1.607	1.460	3.483	0.81	0.15	6.77	330	107.19	0	0	100000	masks_per_entry_mean=1.000150;masks_per_entry_max=2;max_coef_log2=1.000000;ack_p99=6.770996;probe_frac=0.000000;label_entries=612208;prop_nodes=7822;prop_trips=19074;fa_targeted=0
+AZX-K16	200.0	1.601	1.451	3.464	0.79	0.15	6.73	326	107.19	0	0	100000	masks_per_entry_mean=1.000150;masks_per_entry_max=2;max_coef_log2=1.000000;ack_p99=6.734863;probe_frac=0.000000;label_entries=612208;prop_nodes=7822;prop_trips=19074;fa_targeted=0
+BFS	0.0	2.265	2.001	6.521	0.05	0.06	0.11	0	0.00	0	0	100000	;fa_targeted=0
+# who: AZX mean 25853.7 us p99 32392.7 | BFS mean 14592.8 us p99 18508.3
+# what: AZX mean 17.2 us p99 102.8 | BFS mean 15.8 us p99 100.5 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 1373960
+# exit=0
+# cmd: /root/authz_graph_icde27/rev4/code/authz /root/authz_graph_icde27/rev4/data/lj AZX,AZX-K1,AZX-K2,AZX-K8,AZX-K16,BFS 10 -1 1 100 1000 64 env={'AUTHZ_DEFER_B': '64', 'AUTHZ_SHUFFLE': '1'}
+# wall_s: 16.1

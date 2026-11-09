@@ -1,0 +1,15 @@
+# closure_mean=391.8 closure_max=570 hubs_mean=55.2 (sample 1000 users)
+# build=9cc732b8a369 defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch,shuffle probe_test=deg
+# data=/root/authz_graph_icde27/rev4/data/deep_L8 n=129020 m=205185 users=100000 res=12020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.5493
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	23.1	1.172	1.157	2.094	12.00	0.20	231.84	1373	19.00	0	0	100000	masks_per_entry_mean=1.006235;masks_per_entry_max=3;max_coef_log2=2.584963;ack_p99=231.838867;probe_frac=0.000000;label_entries=145639;prop_nodes=173233;prop_trips=263992;fa_targeted=0
+BFS	0.0	4.607	4.570	6.613	0.05	0.06	0.07	12	0.00	0	0	100000	;fa_targeted=0
+BIBFS	0.0	6.533	6.369	11.099	0.05	0.06	0.06	0	0.00	0	0	100000	visited_mean=422.726740;fa_targeted=0
+# who: AZX mean 5446.1 us p99 9668.2 | BFS mean 2917.6 us p99 5912.0
+# what: AZX mean 40.1 us p99 70.9 | BFS mean 66.8 us p99 110.9 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 65300
+# exit=0
+# cmd: /root/authz_graph_icde27/rev4/code/authz /root/authz_graph_icde27/rev4/data/deep_L8 AZX,BFS,BIBFS 10 -1 1 100 1000 64 env={'AUTHZ_DEFER_B': '64', 'AUTHZ_SHUFFLE': '1'}
+# wall_s: 4.7

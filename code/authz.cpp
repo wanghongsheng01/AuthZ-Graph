@@ -8,7 +8,8 @@
 //   every edge on the path must have its condition mask contained in S (S = atoms true in context).
 //
 // Methods: AZX (frontier 2-hop labels with counting annotations; AZX-NODEG = the same labels with the
-// probe/scan test that omits deg+(u), an ablation with an index of its own), BFS (online, no index),
+// probe/scan test that omits deg+(u), an ablation with an index of its own; AZX-K<c> = the test with the
+// constant c instead of 4, for the sensitivity sweep), BFS (online, no index), BIBFS (online bidirectional BFS),
 // SPICE-ML / SPICE-FC (check cache with quantised / exact revisions), TC (closure to grant
 // targets, affected-row recomputation), PLL (2-hop reachability, no deny/conditions, periodic
 // rebuild), LCR (landmark label-constrained reachability index, affected-landmark recomputation).
@@ -188,6 +189,81 @@ struct BFS : Method {
   }
 };
 
+// ------------------------------------------------------------------ BIBFS (online, no index)
+// allow = (u reaches an allow source of r) and not (u reaches a deny source of r), where the sources are the
+// subjects with a frontier edge into an ancestor of r under S. Direction-optimizing bidirectional search: the
+// forward side (out-edges from u) first expands u's memberships and keeps expanding while its next level costs
+// less than enumerating the sources (c_in, as in BFS); if it is exhausted, the check is decided from the closure
+// as in BFS. Otherwise the sources are enumerated and each question is a bidirectional search that expands one
+// level of the side with fewer edges to scan and stops when the two meet. Users other than u have no in-edges
+// that matter, so the backward side follows non-user sources only (u's memberships are already forward). The
+// deny question is asked only for allowed checks and continues the forward side of the allow question.
+struct BIBFS : Method {
+  vector<uint32_t> mf, mb; uint32_t ef = 0, eb = 0; vector<int> fq, bq, allowT, denyT; AncBuf anc;
+  size_t fs = 0, fw = 0; long visited = 0, nchk = 0;
+  explicit BIBFS(Graph& g) : Method(g) { mf.assign(g.n, 0); mb.assign(g.n, 0); }
+  string name() override { return "BIBFS"; }
+  // one forward level; returns true if it reaches a vertex marked by the backward side of epoch eb
+  bool fstep(Mask S, bool test) {
+    size_t fe = fq.size(); fw = 0;
+    for (; fs < fe; fs++)
+      for (auto& e : G.out[fq[fs]]) {
+        if (G.type[e.v] == RES || !sat(e.m, S) || mf[e.v] == ef) continue;
+        mf[e.v] = ef; fq.push_back(e.v); fw += G.out[e.v].size();
+        if (test && mb[e.v] == eb) return true;   // fq[fs] is rescanned if the deny question continues
+      }
+    return false;
+  }
+  bool meet(const vector<int>& T, Mask S) {
+    ++eb; bq.clear(); size_t bw = 0, bs = 0;
+    for (int t : T) {
+      if (mf[t] == ef) return true;
+      if (mb[t] != eb) { mb[t] = eb; bq.push_back(t); bw += G.inN[t].size(); }
+    }
+    while (fs < fq.size() && bs < bq.size()) {
+      if (fw <= bw) { if (fstep(S, true)) return true; }
+      else {
+        size_t be = bq.size(); bw = 0;
+        for (; bs < be; bs++)
+          for (auto& e : G.inN[bq[bs]]) {
+            if (G.type[e.v] == RES || !sat(e.m, S) || mb[e.v] == eb) continue;
+            if (mf[e.v] == ef) return true;
+            mb[e.v] = eb; bq.push_back(e.v); bw += G.inN[e.v].size();
+          }
+      }
+    }
+    return false;
+  }
+  bool check(int u, int r, Mask S, int) override {
+    nchk++;
+    res_ancestors(G, r, S, anc);
+    size_t cin = 0;
+    for (auto& [a, acc] : anc.v) cin += G.inN[a].size() + G.inU[a].size();
+    ++ef; ++eb; fq.clear(); bq.clear(); fq.push_back(u); mf[u] = ef; fs = 0; fw = G.out[u].size();
+    fstep(S, false);                                   // u's memberships
+    while (fs < fq.size() && fw < cin) fstep(S, false);
+    if (fs == fq.size()) {                             // closure complete and cheaper: decide as BFS does
+      visited += fq.size();
+      bool allow = false;
+      for (int x : fq)
+        for (auto& e : G.out[x]) {
+          if (G.type[e.v] != RES || !sat(e.m, S)) continue;
+          for (auto& [a, acc] : anc.v)
+            if (a == e.v && sat(e.m | acc, S)) { if (e.pol < 0) return false; allow = true; }
+        }
+      return allow;
+    }
+    allowT.clear(); denyT.clear();
+    for (auto& [a, acc] : anc.v)
+      for (int k = 0; k < 2; k++)
+        for (auto& e : (k ? G.inU : G.inN)[a])
+          if (G.type[e.v] != RES && (k == 0 || e.v == u) && sat(e.m | acc, S)) (e.pol < 0 ? denyT : allowT).push_back(e.v);
+    bool allow = !allowT.empty() && meet(allowT, S) && (denyT.empty() || !meet(denyT, S));
+    visited += fq.size() + bq.size();
+    return allow;
+  }
+};
+
 // expansion of resource subtrees (shared by what-can-access implementations)
 static long expand_what(const Graph& G, vector<pair<int, Mask>>& allowRoots, vector<pair<int, Mask>>& denyRoots,
                         Mask S, vector<uint32_t>& mk, uint32_t& ep) {
@@ -243,10 +319,10 @@ struct AZX : Method {
   vector<vector<int>> rev;           // hub -> nodes whose label contains it (lazy, may be stale)
   vector<uint32_t> mark; uint32_t ep = 0; vector<int> hubs; AncBuf anc;
   vector<uint32_t> amark; vector<int> apos;  // scratch for propagation
-  long prop_nodes = 0, prop_trips = 0; bool allHubs = false, degtest = true; Cnt maxcoef = 0;
+  long prop_nodes = 0, prop_trips = 0; bool allHubs = false, degtest = true; size_t pk = 4; Cnt maxcoef = 0;
   double apply_cost_us = getenv("AUTHZ_APPLY_COST_US") ? atof(getenv("AUTHZ_APPLY_COST_US")) : 0;
-  explicit AZX(Graph& g, bool all = false, bool deg = true) : Method(g), allHubs(all), degtest(deg) {}
-  string name() override { return allHubs ? "CLOSURE" : degtest ? "AZX" : "AZX-NODEG"; }
+  explicit AZX(Graph& g, bool all = false, bool deg = true, size_t k = 4) : Method(g), allHubs(all), degtest(deg), pk(k) {}
+  string name() override { return allHubs ? "CLOSURE" : !degtest ? "AZX-NODEG" : pk == 4 ? "AZX" : "AZX-K" + to_string(pk); }
   bool hub(int x) { return allHubs ? G.type[x] != USER : fdeg[x] > 0; }
 
   bool is_frontier_edge(int s, int d) { return G.subj(s) && G.type[d] == RES; }
@@ -385,7 +461,7 @@ struct AZX : Method {
     // probing costs about c_in * deg+(u) label lookups (the probe bound), scanning c_lab;
     // degtest = false is the ablation that omits deg+(u)
     size_t cprobe = degtest ? cin * G.out[u].size() : cin;
-    if (force_mode == 2 || (force_mode == 0 && cprobe * 4 < clab)) {   // probe mode: few grant sources on r, large user label
+    if (force_mode == 2 || (force_mode == 0 && cprobe * pk < clab)) {   // probe mode: few grant sources on r, large user label
       probes++;
       bool allow = false;
       for (auto& [a, acc] : anc.v)
@@ -912,8 +988,10 @@ int main(int argc, char** argv) {
       string t = s.substr(0, p); s.erase(0, p + 1);
       if (t == "AZX") { M.emplace_back(new AZX(G)); azx = (AZX*)M.back().get(); }
       else if (t == "AZX-NODEG") M.emplace_back(new AZX(G, false, false));
+      else if (t.rfind("AZX-K", 0) == 0) M.emplace_back(new AZX(G, false, true, (size_t)atol(t.c_str() + 5)));
       else if (t == "CLOSURE") M.emplace_back(new AZX(G, true));
       else if (t == "BFS") { M.emplace_back(new BFS(G)); bfs = (BFS*)M.back().get(); }
+      else if (t == "BIBFS") M.emplace_back(new BIBFS(G));
       else if (t == "SPICE-ML") M.emplace_back(new Spice(G, false, W));
       else if (t == "SPICE-FC") M.emplace_back(new Spice(G, true, W));
       else if (t == "TC") M.emplace_back(new TC(G));
@@ -941,9 +1019,14 @@ int main(int argc, char** argv) {
   }
   vector<Stat> st(M.size());
   for (size_t i = 0; i < M.size(); i++) { double t0 = now_us(); M[i]->build(); st[i].build_ms = (now_us() - t0) / 1000; }
-  printf("# build=%s defer_B=%s sv_A=%s apply_cost_us=%s bg_flush=%s timing=batch probe_test=deg\n", AUTHZ_SRC_HASH,
+  // AUTHZ_SHUFFLE=1: the methods are timed in a fresh random order for every update (own generator, so the
+  // updates and checks are those of the unshuffled run)
+  bool shuffle = getenv("AUTHZ_SHUFFLE") && atoi(getenv("AUTHZ_SHUFFLE"));
+  mt19937_64 orng(seed * 1000003ULL + 17); vector<size_t> order(M.size()); iota(order.begin(), order.end(), 0);
+  printf("# build=%s defer_B=%s sv_A=%s apply_cost_us=%s bg_flush=%s timing=batch%s probe_test=deg\n", AUTHZ_SRC_HASH,
          getenv("AUTHZ_DEFER_B") ? getenv("AUTHZ_DEFER_B") : "default(B)", getenv("AUTHZ_SV_A") ? getenv("AUTHZ_SV_A") : "64",
-         getenv("AUTHZ_APPLY_COST_US") ? getenv("AUTHZ_APPLY_COST_US") : "0", getenv("AUTHZ_BG_FLUSH") ? getenv("AUTHZ_BG_FLUSH") : "0");
+         getenv("AUTHZ_APPLY_COST_US") ? getenv("AUTHZ_APPLY_COST_US") : "0", getenv("AUTHZ_BG_FLUSH") ? getenv("AUTHZ_BG_FLUSH") : "0",
+         shuffle ? ",shuffle" : "");
   printf("# data=%s n=%d m=%zu users=%zu res=%zu updates=%ld qpu=%d W=%ld B=%ld K=%d\n", dir.c_str(), G.n, G.m(),
          usersV.size(), resV.size(), NU, qpu, W, Bp, K);
   long truth_allow = 0, nq = 0;
@@ -1015,11 +1098,12 @@ int main(int argc, char** argv) {
     // time each method over the whole batch (one timer pair per batch: avoids the ~42 ns timer quantum)
     vector<char> ans(batch.size());
     auto nodeg = [&](size_t j) { auto* a = dynamic_cast<AZX*>(M[j].get()); return a && !a->degtest; };
+    if (shuffle) std::shuffle(order.begin(), order.end(), orng);
     for (size_t i0 = 0; i0 < M.size(); i0++) {
       // an AZX-NODEG listed right after AZX swaps timing positions with it on odd updates
-      size_t i = i0;
-      if (t % 2 && i0 + 1 < M.size() && nodeg(i0 + 1) && M[i0]->name() == "AZX") i = i0 + 1;
-      else if (t % 2 && i0 > 0 && nodeg(i0) && M[i0 - 1]->name() == "AZX") i = i0 - 1;
+      size_t i = shuffle ? order[i0] : i0;
+      if (!shuffle && t % 2 && i0 + 1 < M.size() && nodeg(i0 + 1) && M[i0]->name() == "AZX") i = i0 + 1;
+      else if (!shuffle && t % 2 && i0 > 0 && nodeg(i0) && M[i0 - 1]->name() == "AZX") i = i0 - 1;
       double t0 = now_us();
       for (size_t k = 0; k < batch.size(); k++) ans[k] = M[i]->check(batch[k].u, batch[k].r, ctx[batch[k].c], batch[k].c);
       double per = (now_us() - t0) / max<size_t>(1, batch.size());
@@ -1047,6 +1131,7 @@ int main(int argc, char** argv) {
     if (auto* sp = dynamic_cast<Spice*>(M[i].get())) extra = "hit_rate=" + to_string((double)sp->hits / max(1L, sp->hits + sp->misses));
     if (auto* pl = dynamic_cast<PLL*>(M[i].get())) extra = "rebuilds=" + to_string(pl->rebuilds) + ";last_build_ms=" + to_string(pl->build_ms) + ";fa_cond=" + to_string(st[i].fa_cond) + ";fa_deny=" + to_string(st[i].fa_deny) + ";fa_stale=" + to_string(st[i].fa_stale);
     if (auto* tc = dynamic_cast<TC*>(M[i].get())) extra = "rows_recomputed=" + to_string(tc->recomputed);
+    if (auto* bb = dynamic_cast<BIBFS*>(M[i].get())) extra = "visited_mean=" + to_string((double)bb->visited / max(1L, bb->nchk));
     if (auto* lc = dynamic_cast<LCR*>(M[i].get())) extra = "landmarks=" + to_string(lc->lms.size()) + ";relabels=" + to_string(lc->relabels);
     if (auto* sv = dynamic_cast<SVDTC*>(M[i].get())) extra = "fallback_frac=" + to_string((double)sv->fallbacks / max(1L, sv->fallbacks + sv->decided)) + ";recomputes=" + to_string(sv->recomputes) + ";fa_cond=" + to_string(st[i].fa_cond) + ";fa_deny=" + to_string(st[i].fa_deny) + ";fa_stale=" + to_string(st[i].fa_stale);
     if (auto* dz = dynamic_cast<Deferred*>(M[i].get())) extra = "ack_mean=" + to_string(mean(st[i].ack)) + ";ack_p50=" + to_string(pct(st[i].ack, 0.5)) + ";ack_p99=" + to_string(pct(st[i].ack, 0.99)) + ";deferred=" + to_string(dz->ndef) + ";sync=" + to_string(dz->nsync) + ";flushes=" + to_string(dz->nflush) + ";targeted_flushes=" + to_string(dz->ntargeted) + ";targeted_ops=" + to_string(dz->ntargeted_ops) + ";cancel=" + to_string(dz->ncancel) + ";sync_us_mean=" + to_string(dz->sync_us / max(1L, dz->nsync)) + ";flush_ms_total=" + to_string(dz->flush_us / 1000);

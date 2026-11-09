@@ -1,0 +1,18 @@
+# closure_mean=189.9 closure_max=665 hubs_mean=32.0 (sample 1000 users)
+# build=9cc732b8a369 defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch,shuffle probe_test=deg
+# data=/root/authz_graph_icde27/rev4/data/real_simplewiki n=398264 m=1363953 users=280212 res=16020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.4239
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	263.7	1.770	1.662	3.781	45.54	0.21	123.08	99184	144.09	0	0	100000	masks_per_entry_mean=1.000139;masks_per_entry_max=3;max_coef_log2=19.609583;ack_p99=123.078613;probe_frac=0.000000;label_entries=1678873;prop_nodes=366397;prop_trips=1014733;fa_targeted=0
+AZX-K1	263.3	1.757	1.648	3.848	43.68	0.15	88.42	96650	144.09	0	0	100000	masks_per_entry_mean=1.000139;masks_per_entry_max=3;max_coef_log2=19.609583;ack_p99=88.416016;probe_frac=0.000000;label_entries=1678873;prop_nodes=366397;prop_trips=1014733;fa_targeted=0
+AZX-K2	266.7	1.747	1.633	3.807	41.95	0.15	87.43	97737	144.09	0	0	100000	masks_per_entry_mean=1.000139;masks_per_entry_max=3;max_coef_log2=19.609583;ack_p99=87.433105;probe_frac=0.000000;label_entries=1678873;prop_nodes=366397;prop_trips=1014733;fa_targeted=0
+AZX-K8	263.4	1.745	1.638	3.823	40.49	0.14	79.78	91873	144.09	0	0	100000	masks_per_entry_mean=1.000139;masks_per_entry_max=3;max_coef_log2=19.609583;ack_p99=79.778809;probe_frac=0.000000;label_entries=1678873;prop_nodes=366397;prop_trips=1014733;fa_targeted=0
+AZX-K16	262.5	1.735	1.628	3.719	40.14	0.15	80.30	87308	144.09	0	0	100000	masks_per_entry_mean=1.000139;masks_per_entry_max=3;max_coef_log2=19.609583;ack_p99=80.296387;probe_frac=0.000000;label_entries=1678873;prop_nodes=366397;prop_trips=1014733;fa_targeted=0
+BFS	0.0	7.512	7.235	15.027	0.05	0.05	0.11	10	0.00	0	0	100000	;fa_targeted=0
+# who: AZX mean 21879.9 us p99 71178.1 | BFS mean 9895.1 us p99 25914.6
+# what: AZX mean 36.0 us p99 103.9 | BFS mean 75.8 us p99 233.1 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 1099384
+# exit=0
+# cmd: /root/authz_graph_icde27/rev4/code/authz /root/authz_graph_icde27/rev4/data/real_simplewiki AZX,AZX-K1,AZX-K2,AZX-K8,AZX-K16,BFS 10 -1 1 100 1000 64 env={'AUTHZ_DEFER_B': '64', 'AUTHZ_SHUFFLE': '1'}
+# wall_s: 16.7

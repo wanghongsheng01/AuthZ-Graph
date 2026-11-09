@@ -1,0 +1,18 @@
+# closure_mean=212.2 closure_max=1049 hubs_mean=38.2 (sample 1000 users)
+# build=9cc732b8a369 defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch,shuffle probe_test=deg
+# data=/root/authz_graph_icde27/rev4/data/real_hpo_m4 n=47301 m=334983 users=5277 res=16020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.3248
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	60.8	0.788	0.767	1.568	17.40	1.06	354.67	7545	19.65	0	0	100000	masks_per_entry_mean=1.009187;masks_per_entry_max=3;max_coef_log2=11.562242;ack_p99=354.667969;probe_frac=0.002660;label_entries=195605;prop_nodes=188682;prop_trips=304211;fa_targeted=0
+AZX-K1	60.3	0.885	0.864	1.532	15.38	0.82	324.98	7183	19.65	0	0	100000	masks_per_entry_mean=1.009187;masks_per_entry_max=3;max_coef_log2=11.562242;ack_p99=324.976074;probe_frac=0.271770;label_entries=195605;prop_nodes=188682;prop_trips=304211;fa_targeted=0
+AZX-K2	61.0	0.782	0.763	1.353	14.95	0.77	316.69	7083	19.65	0	0	100000	masks_per_entry_mean=1.009187;masks_per_entry_max=3;max_coef_log2=11.562242;ack_p99=316.691895;probe_frac=0.060500;label_entries=195605;prop_nodes=188682;prop_trips=304211;fa_targeted=0
+AZX-K8	61.2	0.785	0.766	1.334	14.84	0.76	311.99	7104	19.65	0	0	100000	masks_per_entry_mean=1.009187;masks_per_entry_max=3;max_coef_log2=11.562242;ack_p99=311.991211;probe_frac=0.000010;label_entries=195605;prop_nodes=188682;prop_trips=304211;fa_targeted=0
+AZX-K16	61.3	0.781	0.762	1.453	14.73	0.76	309.23	7228	19.65	0	0	100000	masks_per_entry_mean=1.009187;masks_per_entry_max=3;max_coef_log2=11.562242;ack_p99=309.233398;probe_frac=0.000000;label_entries=195605;prop_nodes=188682;prop_trips=304211;fa_targeted=0
+BFS	0.0	4.216	4.060	8.113	0.05	0.06	0.13	0	0.00	0	0	100000	;fa_targeted=0
+# who: AZX mean 367.8 us p99 890.3 | BFS mean 119.7 us p99 308.5
+# what: AZX mean 28.3 us p99 90.6 | BFS mean 59.8 us p99 210.2 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 175048
+# exit=0
+# cmd: /root/authz_graph_icde27/rev4/code/authz /root/authz_graph_icde27/rev4/data/real_hpo_m4 AZX,AZX-K1,AZX-K2,AZX-K8,AZX-K16,BFS 10 -1 1 100 1000 64 env={'AUTHZ_DEFER_B': '64', 'AUTHZ_SHUFFLE': '1'}
+# wall_s: 2.9
