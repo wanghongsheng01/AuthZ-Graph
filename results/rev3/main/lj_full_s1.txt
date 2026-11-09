@@ -1,0 +1,19 @@
+# closure_mean=20.5 closure_max=431 hubs_mean=14.0 (sample 1000 users)
+# build=4128c8762e6c defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch probe_test=deg
+# data=/root/authz_graph_icde27/rev3/data/lj_full n=1427105 m=7277173 users=1094822 res=16020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.4314
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	406.1	2.741	2.454	6.556	1.12	0.24	12.04	138	188.24	0	0	100000	masks_per_entry_mean=1.000125;masks_per_entry_max=2;max_coef_log2=2.584963;ack_p99=12.039062;probe_frac=0.000000;label_entries=1809815;prop_nodes=7017;prop_trips=16966;fa_targeted=0
+BFS	0.0	3.254	2.875	8.621	0.05	0.06	0.10	0	0.00	0	0	100000	;fa_targeted=0
+SPICE-ML100	0.0	2.375	2.052	6.175	0.06	0.05	0.11	0	1.97	0	8	100000	hit_rate=0.315990;fa_targeted=0
+SPICE-FC	0.0	2.636	2.321	6.166	0.06	0.06	0.08	0	1.97	0	0	100000	hit_rate=0.077170;fa_targeted=0
+CLOSURE	499.7	3.041	2.736	7.376	0.87	0.17	10.86	140	216.58	0	0	100000	masks_per_entry_mean=1.000097;masks_per_entry_max=2;max_coef_log2=2.584963;ack_p99=10.864258;probe_frac=0.000000;label_entries=2320358;prop_nodes=6294;prop_trips=16943;fa_targeted=0
+AZX-DEFER-SAFE	454.9	4.212	3.878	8.720	3.61	0.82	58.10	319	188.24	0	3252	100000	ack_mean=3.612339;ack_p50=0.815430;ack_p99=58.099121;deferred=4285;sync=5715;flushes=27;targeted_flushes=850;targeted_ops=2494;cancel=0;sync_us_mean=5.273105;flush_ms_total=9.947019;fa_targeted=0
+AZX-DEFER-NAIVE	454.1	4.017	3.723	8.150	3.10	0.54	94.17	333	188.24	80	3788	100000	ack_mean=3.102599;ack_p50=0.542480;ack_p99=94.166016;deferred=5058;sync=4942;flushes=79;targeted_flushes=0;targeted_ops=0;cancel=0;sync_us_mean=4.051947;flush_ms_total=8.514650;fa_targeted=80
+# who: AZX mean 63308.8 us p99 169821.2 | BFS mean 23704.6 us p99 52821.8
+# what: AZX mean 19.9 us p99 119.0 | BFS mean 16.6 us p99 85.1 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 2712908
+# exit=0
+# cmd: /root/authz_graph_icde27/rev3/code/authz /root/authz_graph_icde27/rev3/data/lj_full AZX,BFS,SPICE-ML,SPICE-FC,CLOSURE,DEFER-SAFE,DEFER-NAIVE 10 -1 1 100 1000 64 env={'AUTHZ_DEFER_B': '64'}
+# wall_s: 34.2

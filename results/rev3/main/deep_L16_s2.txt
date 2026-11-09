@@ -1,0 +1,19 @@
+# closure_mean=9579.9 closure_max=10578 hubs_mean=764.8 (sample 1000 users)
+# build=4128c8762e6c defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch probe_test=deg
+# data=/root/authz_graph_icde27/rev3/data/deep_L16 n=145020 m=237916 users=100000 res=12020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.7770
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	945.8	5.457	5.448	7.292	1015.69	0.33	21462.35	48056	414.00	0	0	100000	masks_per_entry_mean=1.081602;masks_per_entry_max=8;max_coef_log2=8.139551;ack_p99=21462.354980;probe_frac=0.984460;label_entries=5233646;prop_nodes=5561475;prop_trips=10623180;fa_targeted=0
+BFS	0.0	208.078	210.284	230.217	0.07	0.06	0.26	1	0.00	0	0	100000	;fa_targeted=0
+SPICE-ML100	0.0	145.060	146.175	218.129	0.09	0.08	0.41	1	1.95	5	11	100000	hit_rate=0.307310;fa_targeted=0
+SPICE-FC	0.0	195.715	196.397	229.274	0.06	0.06	0.16	1	1.95	0	0	100000	hit_rate=0.067870;fa_targeted=0
+CLOSURE	12379.1	6.161	6.146	8.165	8089.07	0.25	213675.03	473134	4231.81	0	0	100000	masks_per_entry_mean=1.006811;masks_per_entry_max=8;max_coef_log2=8.139551;ack_p99=213675.031250;probe_frac=0.984570;label_entries=62699907;prop_nodes=4693910;prop_trips=22487254;fa_targeted=0
+AZX-DEFER-SAFE	932.5	6.133	6.112	8.133	979.04	1.34	23934.47	81053	415.16	0	583	100000	ack_mean=979.040891;ack_p50=1.344727;ack_p99=23934.472168;deferred=3289;sync=6709;flushes=28;targeted_flushes=857;targeted_ops=1441;cancel=2;sync_us_mean=1281.685782;flush_ms_total=4166.397435;fa_targeted=0
+AZX-DEFER-NAIVE	934.4	5.896	5.880	7.889	954.46	0.80	26069.79	142421	413.46	78	513	100000	ack_mean=954.460187;ack_p50=0.800293;ack_p99=26069.791504;deferred=4950;sync=5047;flushes=77;targeted_flushes=0;targeted_ops=0;cancel=3;sync_us_mean=963.885479;flush_ms_total=4674.285306;fa_targeted=73
+# who: AZX mean 33994.3 us p99 57898.2 | BFS mean 23614.7 us p99 88793.3
+# what: AZX mean 794.3 us p99 958.6 | BFS mean 3166.0 us p99 4355.1 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 5996276
+# exit=0
+# cmd: /root/authz_graph_icde27/rev3/code/authz /root/authz_graph_icde27/rev3/data/deep_L16 AZX,BFS,SPICE-ML,SPICE-FC,CLOSURE,DEFER-SAFE,DEFER-NAIVE 10 -1 2 100 1000 64 env={'AUTHZ_DEFER_B': '64'}
+# wall_s: 229.0

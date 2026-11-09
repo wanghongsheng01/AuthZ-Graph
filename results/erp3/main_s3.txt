@@ -1,0 +1,15 @@
+# erp_replay derived_from=4128c8762e6c trace_pairs=21678
+# closure_mean=5.1 closure_max=11 hubs_mean=4.8 (sample 1000 users)
+# build=erp-117a253cbaac defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch probe_test=deg
+# data=data/erp n=7816 m=166212 users=943 res=6420 updates=20978 qpu=10 W=100 B=1000 K=64
+# queries=209780 truth_allow_rate=0.8946
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	0.4	0.817	0.754	1.438	0.03	0.04	0.12	14	0.44	0	0	209780	masks_per_entry_mean=1.000000;masks_per_entry_max=1;max_coef_log2=0.000000;ack_p99=0.125000;probe_frac=0.000000;label_entries=455;prop_nodes=20;prop_trips=20;fa_targeted=0
+BFS	0.0	0.753	0.717	1.642	0.02	0.00	0.04	0	0.00	0	0	209780	;fa_targeted=0
+SPICE-ML100	0.0	0.515	0.483	1.337	0.02	0.00	0.04	4	1.18	0	4	209780	hit_rate=0.423978;fa_targeted=0
+SPICE-FC	0.0	0.735	0.692	1.738	0.02	0.00	0.04	0	1.18	0	0	209780	hit_rate=0.095676;fa_targeted=0
+CLOSURE	0.3	0.812	0.746	1.429	0.02	0.00	0.12	1	0.45	0	0	209780	masks_per_entry_mean=1.000000;masks_per_entry_max=1;max_coef_log2=0.000000;ack_p99=0.125000;probe_frac=0.000000;label_entries=537;prop_nodes=0;prop_trips=0;fa_targeted=0
+AZX-DEFER-SAFE	0.8	0.889	0.817	1.904	0.17	0.04	3.54	74	0.44	0	9715	209780	ack_mean=0.168043;ack_p50=0.041992;ack_p99=3.541992;deferred=19948;sync=1030;flushes=311;targeted_flushes=0;targeted_ops=0;cancel=0;sync_us_mean=0.517352;flush_ms_total=1.915505;fa_targeted=0
+AZX-DEFER-NAIVE	0.8	0.881	0.817	1.967	0.14	0.04	3.42	40	0.44	10	9712	209780	ack_mean=0.141792;ack_p50=0.041992;ack_p99=3.416016;deferred=20052;sync=926;flushes=313;targeted_flushes=0;targeted_ops=0;cancel=0;sync_us_mean=0.404351;flush_ms_total=1.750539;fa_targeted=10
+# who: AZX mean 12.9 us p99 34.0 | BFS mean 9.0 us p99 18.1
+# what: AZX mean 8.0 us p99 18.4 | BFS mean 6.3 us p99 13.0 | who/what mismatches 0

@@ -1,0 +1,15 @@
+# closure_mean=9537.8 closure_max=10612 hubs_mean=762.2 (sample 1000 users)
+# build=4128c8762e6c defer_B=default(B) sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch probe_test=deg
+# data=/root/authz_graph_icde27/rev3/data/deep_L16 n=145020 m=237916 users=100000 res=12020 updates=2000 qpu=10 W=100 B=1000 K=64
+# queries=20000 truth_allow_rate=0.7072
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	930.2	5.047	5.074	6.748	1157.51	0.35	22427.45	44655	407.10	0	0	20000	masks_per_entry_mean=1.096554;masks_per_entry_max=7;max_coef_log2=7.781360;ack_p99=22427.449219;probe_frac=0.985300;label_entries=5625997;prop_nodes=1270123;prop_trips=2911660;fa_targeted=0
+BFS	0.0	207.215	209.643	228.076	0.06	0.06	0.18	1	0.00	0	0	20000	;fa_targeted=0
+CLOSURE	12207.5	5.718	5.731	7.595	7864.46	0.24	209596.60	384847	4222.39	0	0	20000	masks_per_entry_mean=1.008545;masks_per_entry_max=7;max_coef_log2=7.781360;ack_p99=209596.603027;probe_frac=0.985300;label_entries=63573700;prop_nodes=975062;prop_trips=5212478;fa_targeted=0
+# who: AZX mean 32081.2 us p99 54803.3 | BFS mean 19514.1 us p99 76075.9
+# what: AZX mean 780.0 us p99 875.1 | BFS mean 3006.1 us p99 3857.9 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 4946172
+# exit=0
+# cmd: /root/authz_graph_icde27/rev3/code/authz /root/authz_graph_icde27/rev3/data/deep_L16 AZX,BFS,CLOSURE 10 2000 3 100 1000 64 env={}
+# wall_s: 59.4

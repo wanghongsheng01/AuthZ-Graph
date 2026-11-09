@@ -1,0 +1,12 @@
+n 291842
+m 773691
+updates 10000
+ctx 6 3 3 3 5
+users 260998
+groups 13477
+roles 1347
+resources 16020
+deny_edges 1354
+cond_edges 7841
+source SNAP com-dblp.all.cmty.txt.gz
+nest_edges 6143

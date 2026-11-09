@@ -1,0 +1,11 @@
+# erp_replay derived_from=4128c8762e6c trace_pairs=21678
+# closure_mean=5.1 closure_max=25 hubs_mean=4.8 (sample 1000 users)
+# build=erp-117a253cbaac defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch probe_test=deg
+# data=data/erp n=7816 m=166212 users=943 res=6420 updates=20978 qpu=10 W=100 B=1000 K=64
+# queries=209780 truth_allow_rate=0.8966
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	0.4	0.817	0.754	1.371	0.02	0.00	0.08	2	0.44	0	0	209780	masks_per_entry_mean=1.000000;masks_per_entry_max=1;max_coef_log2=0.000000;ack_p99=0.083984;probe_frac=0.000000;label_entries=455;prop_nodes=20;prop_trips=20;fa_targeted=0
+AZX-NODEG	0.3	0.886	0.867	1.875	0.02	0.00	0.08	1	0.44	0	0	209780	masks_per_entry_mean=1.000000;masks_per_entry_max=1;max_coef_log2=0.000000;ack_p99=0.083984;probe_frac=0.017004;label_entries=455;prop_nodes=20;prop_trips=20;fa_targeted=0
+BFS	0.0	0.742	0.729	1.079	0.02	0.00	0.04	3	0.00	0	0	209780	;fa_targeted=0
+# who: AZX mean 13.5 us p99 37.8 | BFS mean 10.5 us p99 24.8
+# what: AZX mean 8.2 us p99 19.3 | BFS mean 6.4 us p99 12.5 | who/what mismatches 0

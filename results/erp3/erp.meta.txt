@@ -1,0 +1,26 @@
+n 7816
+m 166212
+updates 20978
+ctx 2
+users 943
+groups 230
+roles 223
+resources 6420
+deny_edges 5549
+cond_edges 9420
+source Loctek ERP permission model (real, de-identified): accounts, department tree, tenants, roles, menu/button grants, tenant-controlled permissions (deny), shop/warehouse/product-type data scopes; real change history
+window 2026-01-15..2026-11-07
+tenants 88
+depts 142
+accounts_kept 943
+controlled_resources 68
+controlled_if_control {'1': 68}
+deny_tenant_edges 5435
+view_only_edges 13675
+static_containment_edges 6464
+stream_kinds {'shop_grant': 14719, 'shop_revoke': 473, 'shop_level': 292, 'tenant_enable': 112, 'pdt_scope': 1670, 'pdt_revoke': 37, 'addperm': 3153, 'deactivate': 124, 'account': 104, 'reactivate': 2}
+stream_skipped 5
+shop_window_ins 14719
+trace_pairs 21678
+trace_hits 386700
+trace_dropped_pairs 8

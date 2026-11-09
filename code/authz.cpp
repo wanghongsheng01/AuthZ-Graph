@@ -7,7 +7,8 @@
 //   D: same with a deny edge f -> a
 //   every edge on the path must have its condition mask contained in S (S = atoms true in context).
 //
-// Methods: AZX (frontier 2-hop labels with counting annotations), BFS (online, no index),
+// Methods: AZX (frontier 2-hop labels with counting annotations; AZX-NODEG = the same labels with the
+// probe/scan test that omits deg+(u), an ablation with an index of its own), BFS (online, no index),
 // SPICE-ML / SPICE-FC (check cache with quantised / exact revisions), TC (closure to grant
 // targets, affected-row recomputation), PLL (2-hop reachability, no deny/conditions, periodic
 // rebuild), LCR (landmark label-constrained reachability index, affected-landmark recomputation).
@@ -242,10 +243,10 @@ struct AZX : Method {
   vector<vector<int>> rev;           // hub -> nodes whose label contains it (lazy, may be stale)
   vector<uint32_t> mark; uint32_t ep = 0; vector<int> hubs; AncBuf anc;
   vector<uint32_t> amark; vector<int> apos;  // scratch for propagation
-  long prop_nodes = 0, prop_trips = 0; bool allHubs = false; Cnt maxcoef = 0;
+  long prop_nodes = 0, prop_trips = 0; bool allHubs = false, degtest = true; Cnt maxcoef = 0;
   double apply_cost_us = getenv("AUTHZ_APPLY_COST_US") ? atof(getenv("AUTHZ_APPLY_COST_US")) : 0;
-  explicit AZX(Graph& g, bool all = false) : Method(g), allHubs(all) {}
-  string name() override { return allHubs ? "CLOSURE" : "AZX"; }
+  explicit AZX(Graph& g, bool all = false, bool deg = true) : Method(g), allHubs(all), degtest(deg) {}
+  string name() override { return allHubs ? "CLOSURE" : degtest ? "AZX" : "AZX-NODEG"; }
   bool hub(int x) { return allHubs ? G.type[x] != USER : fdeg[x] > 0; }
 
   bool is_frontier_edge(int s, int d) { return G.subj(s) && G.type[d] == RES; }
@@ -381,7 +382,10 @@ struct AZX : Method {
     size_t cin = 0, clab = 0;
     for (auto& [a, acc] : anc.v) cin += G.inN[a].size() + G.inU[a].size();
     for (auto& e : G.out[u]) clab += G.type[e.v] == RES ? 1 : L[e.v].size();
-    if (force_mode == 2 || (force_mode == 0 && cin * 4 < clab)) {   // probe mode: few grant sources on r, large user label
+    // probing costs about c_in * deg+(u) label lookups (the probe bound), scanning c_lab;
+    // degtest = false is the ablation that omits deg+(u)
+    size_t cprobe = degtest ? cin * G.out[u].size() : cin;
+    if (force_mode == 2 || (force_mode == 0 && cprobe * 4 < clab)) {   // probe mode: few grant sources on r, large user label
       probes++;
       bool allow = false;
       for (auto& [a, acc] : anc.v)
@@ -907,6 +911,7 @@ int main(int argc, char** argv) {
     while ((p = s.find(',')) != string::npos) {
       string t = s.substr(0, p); s.erase(0, p + 1);
       if (t == "AZX") { M.emplace_back(new AZX(G)); azx = (AZX*)M.back().get(); }
+      else if (t == "AZX-NODEG") M.emplace_back(new AZX(G, false, false));
       else if (t == "CLOSURE") M.emplace_back(new AZX(G, true));
       else if (t == "BFS") { M.emplace_back(new BFS(G)); bfs = (BFS*)M.back().get(); }
       else if (t == "SPICE-ML") M.emplace_back(new Spice(G, false, W));
@@ -936,7 +941,7 @@ int main(int argc, char** argv) {
   }
   vector<Stat> st(M.size());
   for (size_t i = 0; i < M.size(); i++) { double t0 = now_us(); M[i]->build(); st[i].build_ms = (now_us() - t0) / 1000; }
-  printf("# build=%s defer_B=%s sv_A=%s apply_cost_us=%s bg_flush=%s timing=batch\n", AUTHZ_SRC_HASH,
+  printf("# build=%s defer_B=%s sv_A=%s apply_cost_us=%s bg_flush=%s timing=batch probe_test=deg\n", AUTHZ_SRC_HASH,
          getenv("AUTHZ_DEFER_B") ? getenv("AUTHZ_DEFER_B") : "default(B)", getenv("AUTHZ_SV_A") ? getenv("AUTHZ_SV_A") : "64",
          getenv("AUTHZ_APPLY_COST_US") ? getenv("AUTHZ_APPLY_COST_US") : "0", getenv("AUTHZ_BG_FLUSH") ? getenv("AUTHZ_BG_FLUSH") : "0");
   printf("# data=%s n=%d m=%zu users=%zu res=%zu updates=%ld qpu=%d W=%ld B=%ld K=%d\n", dir.c_str(), G.n, G.m(),
@@ -1009,7 +1014,12 @@ int main(int argc, char** argv) {
     }
     // time each method over the whole batch (one timer pair per batch: avoids the ~42 ns timer quantum)
     vector<char> ans(batch.size());
-    for (size_t i = 0; i < M.size(); i++) {
+    auto nodeg = [&](size_t j) { auto* a = dynamic_cast<AZX*>(M[j].get()); return a && !a->degtest; };
+    for (size_t i0 = 0; i0 < M.size(); i0++) {
+      // an AZX-NODEG listed right after AZX swaps timing positions with it on odd updates
+      size_t i = i0;
+      if (t % 2 && i0 + 1 < M.size() && nodeg(i0 + 1) && M[i0]->name() == "AZX") i = i0 + 1;
+      else if (t % 2 && i0 > 0 && nodeg(i0) && M[i0 - 1]->name() == "AZX") i = i0 - 1;
       double t0 = now_us();
       for (size_t k = 0; k < batch.size(); k++) ans[k] = M[i]->check(batch[k].u, batch[k].r, ctx[batch[k].c], batch[k].c);
       double per = (now_us() - t0) / max<size_t>(1, batch.size());

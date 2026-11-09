@@ -1,0 +1,19 @@
+# closure_mean=7.3 closure_max=89 hubs_mean=4.0 (sample 1000 users)
+# build=4128c8762e6c defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch probe_test=deg
+# data=/root/authz_graph_icde27/rev3/data/youtube n=72378 m=152130 users=47135 res=16020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.2467
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	6.1	0.407	0.367	1.180	0.59	0.16	5.54	195	5.35	0	0	100000	masks_per_entry_mean=1.002951;masks_per_entry_max=2;max_coef_log2=1.584963;ack_p99=5.537109;probe_frac=0.000000;label_entries=21348;prop_nodes=5989;prop_trips=11320;fa_targeted=0
+BFS	0.0	0.435	0.378	1.351	0.05	0.06	0.07	0	0.00	0	0	100000	;fa_targeted=0
+SPICE-ML100	0.0	0.482	0.429	1.182	0.05	0.06	0.08	8	1.85	4	19	100000	hit_rate=0.318270;fa_targeted=2
+SPICE-FC	0.0	0.523	0.476	1.107	0.05	0.06	0.07	7	1.85	0	0	100000	hit_rate=0.078670;fa_targeted=0
+CLOSURE	7.5	0.459	0.399	1.439	0.49	0.11	4.96	212	6.09	0	0	100000	masks_per_entry_mean=1.001878;masks_per_entry_max=2;max_coef_log2=1.584963;ack_p99=4.964355;probe_frac=0.000000;label_entries=33551;prop_nodes=5351;prop_trips=11214;fa_targeted=0
+AZX-DEFER-SAFE	8.4	0.694	0.665	1.504	1.21	0.48	12.16	175	5.35	0	3280	100000	ack_mean=1.206403;ack_p50=0.476562;ack_p99=12.158691;deferred=4204;sync=5792;flushes=28;targeted_flushes=795;targeted_ops=2358;cancel=4;sync_us_mean=1.576359;flush_ms_total=4.396337;fa_targeted=0
+AZX-DEFER-NAIVE	8.4	0.662	0.639	1.373	1.03	0.33	10.72	235	5.34	22	3835	100000	ack_mean=1.030262;ack_p50=0.331055;ack_p99=10.722656;deferred=4977;sync=5019;flushes=77;targeted_flushes=0;targeted_ops=0;cancel=4;sync_us_mean=0.856390;flush_ms_total=4.388597;fa_targeted=22
+# who: AZX mean 342.0 us p99 765.3 | BFS mean 121.2 us p99 306.8
+# what: AZX mean 7.2 us p99 50.7 | BFS mean 6.3 us p99 43.5 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 94200
+# exit=0
+# cmd: /root/authz_graph_icde27/rev3/code/authz /root/authz_graph_icde27/rev3/data/youtube AZX,BFS,SPICE-ML,SPICE-FC,CLOSURE,DEFER-SAFE,DEFER-NAIVE 10 -1 2 100 1000 64 env={'AUTHZ_DEFER_B': '64'}
+# wall_s: 0.8

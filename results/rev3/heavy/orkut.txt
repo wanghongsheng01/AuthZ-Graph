@@ -1,0 +1,16 @@
+# closure_mean=109.6 closure_max=1612 hubs_mean=73.8 (sample 1000 users)
+# build=4128c8762e6c defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch probe_test=deg
+# data=/root/authz_graph_icde27/rev3/data/orkut n=9240304 m=108338624 users=2307085 res=16020 updates=100 qpu=10 W=100 B=1000 K=64
+# queries=1000 truth_allow_rate=0.7100
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	11570.0	68.419	67.952	103.519	3.70	0.39	117.48	125	2178.98	0	0	1000	masks_per_entry_mean=1.000013;masks_per_entry_max=2;max_coef_log2=3.000000;ack_p99=117.484375;probe_frac=0.000000;label_entries=27824405;prop_nodes=381;prop_trips=948;fa_targeted=0
+BFS	0.0	87.574	86.835	162.955	0.06	0.05	0.09	0	0.00	0	0	1000	;fa_targeted=0
+PLL-noDeny	593985.9	0.441	0.437	0.663	0.07	0.08	0.19	0	3431.78	93	12	1000	rebuilds=1;last_build_ms=593985.464313;fa_cond=59;fa_deny=31;fa_stale=3;fa_targeted=20
+LCR-LI	1242.6	67.027	67.019	113.126	0.80	0.33	5.53	8	5.54	0	0	1000	landmarks=64;relabels=0;fa_targeted=0
+# who: AZX mean 684493.2 us p99 734158.7 | BFS mean 219580.6 us p99 239463.8
+# what: AZX mean 81.0 us p99 434.0 | BFS mean 73.5 us p99 439.2 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 16519652
+# exit=0
+# cmd: /root/authz_graph_icde27/rev3/code/authz /root/authz_graph_icde27/rev3/data/orkut AZX,BFS,PLL,LCR 10 100 1 100 1000 64 env={'AUTHZ_DEFER_B': '64'}
+# wall_s: 910.3

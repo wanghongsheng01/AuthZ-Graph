@@ -1,0 +1,19 @@
+# closure_mean=94.6 closure_max=250 hubs_mean=58.8 (sample 1000 users)
+# build=4128c8762e6c defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch probe_test=deg
+# data=/root/authz_graph_icde27/rev3/data/syn10m n=11007010 m=22050043 users=10000000 res=607010 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.3328
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	1877.0	1.846	1.811	2.909	8.49	0.30	110.01	6593	1279.24	0	0	100000	masks_per_entry_mean=1.000246;masks_per_entry_max=2;max_coef_log2=1.584963;ack_p99=110.008301;probe_frac=0.000000;label_entries=10676864;prop_nodes=38818;prop_trips=325960;fa_targeted=0
+BFS	0.0	4.467	4.358	7.225	0.05	0.06	0.10	1	0.00	0	0	100000	;fa_targeted=0
+SPICE-ML100	0.0	3.057	2.890	5.262	0.07	0.07	0.18	1	1.97	0	8	100000	hit_rate=0.317330;fa_targeted=0
+SPICE-FC	0.0	3.709	3.551	5.718	0.07	0.06	0.14	10	1.97	0	0	100000	hit_rate=0.078630;fa_targeted=0
+CLOSURE	2658.4	2.170	2.140	3.284	11.57	0.20	145.37	10668	1705.98	0	0	100000	masks_per_entry_mean=1.000152;masks_per_entry_max=2;max_coef_log2=1.584963;ack_p99=145.368652;probe_frac=0.000000;label_entries=17294275;prop_nodes=26466;prop_trips=492007;fa_targeted=0
+AZX-DEFER-SAFE	2266.1	2.963	2.927	4.252	159.67	1.19	5032.90	7135	1279.24	0	2781	100000	ack_mean=159.674905;ack_p50=1.191406;ack_p99=5032.901855;deferred=2692;sync=7308;flushes=27;targeted_flushes=680;targeted_ops=907;cancel=0;sync_us_mean=217.465647;flush_ms_total=20.021477;fa_targeted=0
+AZX-DEFER-NAIVE	2201.1	2.955	2.915	4.238	157.35	0.68	5002.95	6959	1279.24	18	4768	100000	ack_mean=157.345120;ack_p50=0.680664;ack_p99=5002.954590;deferred=4994;sync=5006;flushes=78;targeted_flushes=0;targeted_ops=0;cancel=0;sync_us_mean=304.809116;flush_ms_total=43.917363;fa_targeted=18
+# who: AZX mean 18214.7 us p99 168926.0 | BFS mean 14202.3 us p99 119525.2
+# what: AZX mean 217.3 us p99 608.8 | BFS mean 138.6 us p99 498.8 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 13835168
+# exit=0
+# cmd: /root/authz_graph_icde27/rev3/code/authz /root/authz_graph_icde27/rev3/data/syn10m AZX,BFS,SPICE-ML,SPICE-FC,CLOSURE,DEFER-SAFE,DEFER-NAIVE 10 -1 1 100 1000 64 env={'AUTHZ_DEFER_B': '64'}
+# wall_s: 44.3

@@ -1,0 +1,17 @@
+n 94837
+m 446119
+updates 10000
+ctx 6 3 3 3 5
+users 38821
+groups 38092
+roles 1904
+resources 16020
+deny_edges 1896
+cond_edges 8030
+source REAL go (groups=38092, scc_merged=0) p_role=0.05
+nest_edges 63726
+raw_nest_edges 63726
+scc_merged_groups 0
+depth_max 17
+depth_mean 6.87
+member_edges 336482

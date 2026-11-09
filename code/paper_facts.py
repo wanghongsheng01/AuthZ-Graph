@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate every number, table and figure of the manuscript from raw results.
 
-Source of truth: results_rev2/<group>/<name>.txt (AUTHZ_RESULTS to override), all produced by one source
+Source of truth: results_rev3/<group>/<name>.txt (AUTHZ_RESULTS to override), all produced by one source
 file whose hash every result header must carry (AUTHZ_EXPECT_BUILD). No fallback to older trees; missing
 inputs become \\todo{...} placeholders, listed at the end. Sources per macro: paper/numbers_sources.txt.
 Writes paper/numbers.tex, paper/tables/*.tex and paper/figs/*.pdf.
@@ -13,7 +13,7 @@ import numpy as np
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PAPER = f'{ROOT}/paper'
-REV = f"{ROOT}/{os.environ.get('AUTHZ_RESULTS', 'results_rev2')}"
+REV = f"{ROOT}/{os.environ.get('AUTHZ_RESULTS', 'results_rev3')}"
 OLD = f'{ROOT}/results'
 os.makedirs(f'{PAPER}/tables', exist_ok=True)
 os.makedirs(f'{PAPER}/figs', exist_ok=True)
@@ -121,10 +121,10 @@ def mac(nm, val):
     SRC[nm] = sorted(CUR) if CUR else ['derived/none']
 
 
-# Results are read from ONE tree only (default results_rev2/, produced by one source file).
+# Results are read from ONE tree only (default results_rev3/, produced by one source file).
 # There is no fallback to older trees: a missing file becomes a \todo placeholder, and a file whose
 # '# build=' header does not match EXPECT_BUILD aborts the script.
-EXPECT_BUILD = os.environ.get('AUTHZ_EXPECT_BUILD', 'cdb396bf191d')
+EXPECT_BUILD = os.environ.get('AUTHZ_EXPECT_BUILD', '4128c8762e6c')
 TREE = os.path.relpath(REV, ROOT)
 BUILDS = {}   # build string -> number of files
 
@@ -188,7 +188,7 @@ def f(x, nd=2):
 
 
 def fi(n):
-    return f'{int(n):,}'.replace(',', '{,}')
+    return f'{int(round(float(n))):,}'.replace(',', '{,}')
 
 
 def pct(x):
@@ -786,7 +786,7 @@ else:
 # A production ERP permission graph (de-identified, not released). The replay driver code/erp_replay.cpp
 # is generated from authz.cpp by make_erp_replay.py; every file must name the expected derivation.
 section()
-ERPD = f"{ROOT}/{os.environ.get('AUTHZ_ERP_RESULTS', 'results_erp')}"
+ERPD = f"{ROOT}/{os.environ.get('AUTHZ_ERP_RESULTS', 'results_erp3')}"
 def erp(nm):
     p = f'{ERPD}/{nm}.txt'
     rr, info = parse(p)
@@ -840,6 +840,10 @@ if E3 and em:
     if S3:
         mac('ErpSynRatio', f(stt.mean(r_['BFS']['q_mean_us'] for r_, _ in S3) / stt.mean(r_['AZX']['q_mean_us'] for r_, _ in S3)))
         assert all(r_['AZX']['false_allow'] == 0 for r_, _ in S3)
+    A3 = [erp(f'abl_s{i}') for i in (1, 2, 3)]; A3 = [x for x in A3 if x[0]]
+    if A3:
+        mac('ErpAblGain', f(stt.mean(r_['AZX-NODEG']['q_mean_us'] for r_, _ in A3) / stt.mean(r_['AZX']['q_mean_us'] for r_, _ in A3)))
+        assert all(r_[m_]['false_allow'] == 0 for r_, _ in A3 for m_ in ('AZX', 'AZX-NODEG'))
 else:
     for k_ in ['ErpUsers', 'ErpAZX']:
         mac(k_, TODO)
@@ -861,7 +865,7 @@ def e1(grp, nm):
         raise SystemExit(f'{p}: unexpected build {b}')
     CUR.add(os.path.relpath(f'{E1D}/{grp}', ROOT)); return rr, info
 deg, ctl = {}, {}
-for ds in DATA + SERVER + REAL + [d + '_m4' for d in REAL]:
+for ds in (DATA + SERVER + REAL + [d + '_m4' for d in REAL]) if EXPECT_BUILD == 'cdb396bf191d' else []:
     for s_ in (1, 2, 3):
         a, c = e1('main', f'{ds}_s{s_}'), e1('ctrl', f'{ds}_s{s_}')
         if a and c:
@@ -893,6 +897,44 @@ if deg:
     mac('DegChecks', fi(sum(int(r['AZX']['queries']) for v in deg.values() for r, _ in v)))
     open(f'{E1D}/summary.tsv', 'w').write('dataset\tseeds\tBFS/FLIX_deg\tBFS/FLIX_ctrl\tgain\n' + ''.join(
         f'{d}\t{len(deg[d])}\t{spd(deg[d]):.3f}\t{spd(ctl[d]):.3f}\t{gain[d]:.3f}\n' for d in deg))
+
+
+# ------------------------------------------------------------------ ablation: probe/scan test without deg+(u)
+# results_rev3/abl: AZX, AZX-NODEG (FLIX with the test 4 c_in < c_lab and an index of its own) and BFS in one
+# process; AZX and AZX-NODEG swap timing positions on odd updates. Seeds as in the main runs.
+# nod[d] = mean check time of AZX-NODEG / AZX (>1: the default test is faster).
+section()
+abl = {}
+for d in DATA + SERVER + REAL + [k + '_m4' for k in REAL]:
+    seeds = (1,) if d in ('syn1m', 'lj') or d in SERVER else (1, 2, 3)
+    rs = []
+    for s_ in seeds:
+        r_, i_ = parse(f'{REV}/abl/{d}_s{s_}.txt')
+        if r_ and 'AZX-NODEG' in r_ and 'BFS' in r_:
+            check_build(f'{REV}/abl/{d}_s{s_}.txt', i_); rs.append((r_, i_))
+        else:
+            MISSING.append(f'abl/{d}_s{s_}')
+    if rs:
+        abl[d] = rs
+if abl:
+    CUR.add(f'{TREE}/abl')
+    nod = {d: mean_of(rs, 'AZX-NODEG') / mean_of(rs, 'AZX') for d, rs in abl.items()}
+    old = {d: mean_of(rs, 'BFS') / mean_of(rs, 'AZX-NODEG') for d, rs in abl.items()}
+    named = {'real_hpo': 'Hpo', 'real_simplewiki': 'Wiki', 'amzn': 'Amzn', 'youtube': 'Youtube', 'real_enwiki': 'Enw'}
+    for d, k in named.items():
+        if d in abl:
+            mac(f'Abl{k}Gain', f(nod[d])); mac(f'Abl{k}Old', f(old[d]))
+            mac(f'Abl{k}ProbePct', f(100 * xmean(abl[d], 'AZX', 'probe_frac')))
+            mac(f'Abl{k}OldProbePct', f(100 * xmean(abl[d], 'AZX-NODEG', 'probe_frac')))
+    oth = [g for d, g in nod.items() if d not in named]   # includes the personal-label (_m4) variants
+    mac('AblOtherMin', f(min(oth))); mac('AblOtherMax', f(max(oth))); mac('AblOtherCount', str(len(oth)))
+    allg = [g for d, g in nod.items() if not d.endswith('_m4')]
+    mac('AblMin', f(min(allg))); mac('AblMax', f(max(allg))); mac('AblGraphs', str(len(allg)))
+    mac('AblFA', fi(sum(int(r['AZX-NODEG']['false_allow']) + int(r['AZX-NODEG']['false_deny']) for v in abl.values() for r, _ in v)))
+    os.makedirs(f'{REV}/summary', exist_ok=True)
+    open(f'{REV}/summary/ablation_nodeg.tsv', 'w').write('dataset\tseeds\tFLIX_us\tFLIX_nodeg_us\tBFS_us\tnodeg/FLIX\tBFS/FLIX\tBFS/FLIX_nodeg\n' + ''.join(
+        f'{d}\t{len(abl[d])}\t{mean_of(abl[d], "AZX"):.3f}\t{mean_of(abl[d], "AZX-NODEG"):.3f}\t{mean_of(abl[d], "BFS"):.3f}\t{nod[d]:.3f}\t'
+        f'{mean_of(abl[d], "BFS") / mean_of(abl[d], "AZX"):.3f}\t{old[d]:.3f}\n' for d in abl))
 
 # ================================================================== numbers.tex + sources
 with open(f'{PAPER}/numbers.tex', 'w') as fh:
@@ -1161,23 +1203,24 @@ for k in REAL:
             continue
         rs = realm[v]; info = rs[0][1]; m = meta(v)
         bq, aq = mean_of(rs, 'BFS'), mean_of(rs, 'AZX')
+        ao_ = f(mean_of(abl[v], 'AZX-NODEG') / mean_of(abl[v], 'AZX')) + r'$\times$' if v in abl else '--'
         rows.append(f"{name(v)} & {m.get('depth_max', '--')} & {f(info.get('closure'))} & {f(info.get('hubs'))} & {f(bq)} & {f(aq)} & "
-                    f"{f(bq / aq)}$\\times$ & {f(mean_of(rs, 'AZX', 'u_mean_us'))} & {fi(sum(int(r['AZX']['false_allow']) for r, _ in rs))} \\\\")
+                    f"{f(bq / aq)}$\\times$ & {ao_} & {f(mean_of(rs, 'AZX', 'u_mean_us'))} & {fi(sum(int(r['AZX']['false_allow']) for r, _ in rs))} \\\\")
     if k in deg:
         rs = deg[k]; bq, aq = mean_of(rs, 'BFS'), mean_of(rs, 'AZX')
         rows.append(f"{name(k)}$^{{d}}$ & \\multicolumn{{3}}{{r}}{{\\emph{{original test:}} {f(spd(ctl[k]))}$\\times$}} & {f(bq)} & {f(aq)} & {f(bq / aq)}$\\times$ & -- & "
                     f"{fi(sum(int(r['AZX']['false_allow']) for r, _ in rs))} \\\\")
 if not rows:
-    rows = [r'\multicolumn{9}{l}{\todo{real hierarchies pending}} \\']
+    rows = [r'\multicolumn{10}{l}{\todo{real hierarchies pending}} \\']
 wtab('real', r"""\begin{table}[t]
 \centering
-\caption{Real nesting hierarchies (3 seeds""" + (', ' + ', '.join(f'{name(d)}: {SHORT[d]}' for d in SHORT if d.startswith('real')) if any(d.startswith('real') for d in SHORT) else '') + r"""; mean $\mu$s). Depth: longest nesting chain; Upd.: mean $\mu$s per update; FA: false allows of \sys. $^{m}$: users with at least four memberships get a personal group, which materialises their label (same allow set). $^{d}$: probe/scan test weighted by the user's out-degree, in a run of \sys and BFS only, next to the BFS/\sys ratio of the original test in the same setting (Section~\ref{sec:exp-real}).}
+\caption{Real nesting hierarchies (3 seeds""" + (', ' + ', '.join(f'{name(d)}: {SHORT[d]}' for d in SHORT if d.startswith('real')) if any(d.startswith('real') for d in SHORT) else '') + r"""; mean $\mu$s). Depth: longest nesting chain; Upd.: mean $\mu$s per update; FA: false allows of \sys. $^{m}$: users with at least four memberships get a personal group, which materialises their label (same allow set). $-\deg$: check time when the probe/scan test omits $\deg^+(u)$, relative to \sys in the same process (Section~\ref{sec:exp-real}).}
 \label{tab:real}
 \footnotesize
 \setlength{\tabcolsep}{2.6pt}
-\begin{tabular}{lrrrrrrrr}
+\begin{tabular}{lrrrrrrrrr}
 \toprule
-Hierarchy & Depth & Clos. & Hubs & BFS & FLIX & $\frac{\text{BFS}}{\text{FLIX}}$ & Upd. & FA \\
+Hierarchy & Depth & Clos. & Hubs & BFS & FLIX & $\frac{\text{BFS}}{\text{FLIX}}$ & $-\deg$ & Upd. & FA \\
 \midrule
 """ + '\n'.join(rows) + r"""
 \bottomrule

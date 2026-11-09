@@ -1,0 +1,19 @@
+# closure_mean=9.5 closure_max=44 hubs_mean=2.0 (sample 1000 users)
+# build=4128c8762e6c defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch probe_test=deg
+# data=/root/authz_graph_icde27/rev3/data/amzn n=67426 m=527936 users=36062 res=21581 updates=19406 qpu=10 W=100 B=1000 K=64
+# queries=194060 truth_allow_rate=0.0593
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	5.4	0.279	0.259	0.814	0.06	0.05	0.25	9	3.82	0	0	194060	masks_per_entry_mean=1.000000;masks_per_entry_max=1;max_coef_log2=0.000000;ack_p99=0.253906;probe_frac=0.000005;label_entries=4282;prop_nodes=0;prop_trips=0;fa_targeted=0
+BFS	0.0	0.237	0.216	0.694	0.03	0.03	0.07	0	0.00	0	0	194060	;fa_targeted=0
+SPICE-ML100	0.0	0.362	0.314	0.803	0.03	0.03	0.05	0	3.23	0	0	194060	hit_rate=0.363738;fa_targeted=0
+SPICE-FC	0.0	0.392	0.350	0.850	0.04	0.04	0.05	0	3.23	0	0	194060	hit_rate=0.124668;fa_targeted=0
+CLOSURE	6.7	0.356	0.336	0.875	0.05	0.04	0.22	7	4.64	0	0	194060	masks_per_entry_mean=1.000000;masks_per_entry_max=1;max_coef_log2=0.000000;ack_p99=0.224121;probe_frac=0.000005;label_entries=20325;prop_nodes=0;prop_trips=0;fa_targeted=0
+AZX-DEFER-SAFE	10.2	0.456	0.426	1.334	0.66	0.15	12.78	138	3.82	0	1336	194060	ack_mean=0.663150;ack_p50=0.148926;ack_p99=12.782715;deferred=15119;sync=4273;flushes=104;targeted_flushes=835;targeted_ops=8410;cancel=14;sync_us_mean=1.733886;flush_ms_total=7.322767;fa_targeted=0
+AZX-DEFER-NAIVE	10.2	0.424	0.394	1.302	0.56	0.11	18.03	149	3.82	8	1488	194060	ack_mean=0.560763;ack_p50=0.106934;ack_p99=18.027832;deferred=19225;sync=166;flushes=300;targeted_flushes=0;targeted_ops=0;cancel=15;sync_us_mean=0.763787;flush_ms_total=7.991400;fa_targeted=8
+# who: AZX mean 2.4 us p99 13.9 | BFS mean 1.2 us p99 8.0
+# what: AZX mean 1.2 us p99 8.4 | BFS mean 1.2 us p99 5.6 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 176232
+# exit=0
+# cmd: /root/authz_graph_icde27/rev3/code/authz /root/authz_graph_icde27/rev3/data/amzn AZX,BFS,SPICE-ML,SPICE-FC,CLOSURE,DEFER-SAFE,DEFER-NAIVE 10 -1 2 100 1000 64 env={'AUTHZ_DEFER_B': '64'}
+# wall_s: 0.9

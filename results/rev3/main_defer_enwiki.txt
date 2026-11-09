@@ -1,0 +1,33 @@
+# closure_mean=5166.9 closure_max=18106 hubs_mean=97.2 (sample 1000 users)
+# build=4128c8762e6c-wide defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch probe_test=deg
+# data=/root/authz_graph_icde27/rev3/data/real_enwiki n=2770291 m=11017122 users=354701 res=16020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.8721
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	26490.4	4.646	4.473	8.318	1619.71	0.24	860.62	3088490	13624.03	0	0	100000	masks_per_entry_mean=1.034487;masks_per_entry_max=5;max_coef_log2=95.083530;ack_p99=860.616211;probe_frac=0.000000;label_entries=164216474;prop_nodes=10317038;prop_trips=21188740;fa_targeted=0
+AZX-DEFER-SAFE	26204.7	4.648	4.483	8.248	1521.37	0.93	922.37	2819002	13624.05	0	680	100000	ack_mean=1521.374408;ack_p50=0.934082;ack_p99=922.368164;deferred=3235;sync=6764;flushes=26;targeted_flushes=889;targeted_ops=1514;cancel=1;sync_us_mean=2173.257084;flush_ms_total=6215.735686;fa_targeted=0
+AZX-DEFER-NAIVE	26193.7	4.386	4.217	7.921	1496.39	0.56	846.27	2813776	13624.02	5	838	100000	ack_mean=1496.391850;ack_p50=0.561035;ack_p99=846.269043;deferred=5060;sync=4940;flushes=79;targeted_flushes=0;targeted_ops=0;cancel=0;sync_us_mean=1805.966197;flush_ms_total=6038.808159;fa_targeted=5
+	Command being timed: "nice -n 10 /root/authz_graph_icde27/rev3/code/authz_wide /root/authz_graph_icde27/rev3/data/real_enwiki AZX,DEFER-SAFE,DEFER-NAIVE 10 -1 1"
+	User time (seconds): 160.71
+	System time (seconds): 16.42
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:57.15
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 52639280
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 12216184
+	Voluntary context switches: 12
+	Involuntary context switches: 404
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+# exit=0
+# cmd: /root/authz_graph_icde27/rev3/data/real_enwiki AZX,DEFER-SAFE,DEFER-NAIVE 10 -1 1 env=AUTHZ_DEFER_B=64 (enwiki phase)

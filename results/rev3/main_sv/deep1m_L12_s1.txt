@@ -1,0 +1,17 @@
+# closure_mean=3424.4 closure_max=4378 hubs_mean=903.9 (sample 1000 users)
+# build=4128c8762e6c defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch probe_test=deg
+# data=/root/authz_graph_icde27/rev3/data/deep1m_L12 n=1100110 m=1751723 users=1000000 res=66110 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.4883
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	485.1	6.079	6.061	8.566	232.76	0.39	6620.23	35046	304.05	0	0	100000	masks_per_entry_mean=1.005756;masks_per_entry_max=4;max_coef_log2=4.000000;ack_p99=6620.231445;probe_frac=0.985300;label_entries=3732569;prop_nodes=824337;prop_trips=1720962;fa_targeted=0
+BFS	0.0	80.036	80.107	99.874	0.06	0.06	0.15	1	0.00	0	0	100000	;fa_targeted=0
+SV-DTC	40.4	67.136	66.878	101.500	175.03	0.31	3713.64	91911	10.49	42122	109	100000	fallback_frac=0.999740;recomputes=142;fa_cond=8852;fa_deny=31863;fa_stale=1407;fa_targeted=6891
+SV-DTC-deg5	43.2	59.100	58.775	89.410	96.06	0.22	6692.61	7217	10.49	42122	109	100000	fallback_frac=0.997250;recomputes=142;fa_cond=8852;fa_deny=31863;fa_stale=1407;fa_targeted=6891
+SV-DTC-deg64	115.1	62.204	62.089	92.947	575.14	0.27	39723.76	43751	134.29	42122	109	100000	fallback_frac=0.897120;recomputes=142;fa_cond=8852;fa_deny=31863;fa_stale=1407;fa_targeted=6891
+# who: AZX mean 99172.4 us p99 226407.6 | BFS mean 79144.3 us p99 310544.0
+# what: AZX mean 565.9 us p99 706.4 | BFS mean 1170.2 us p99 1564.1 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 1382092
+# exit=0
+# cmd: /root/authz_graph_icde27/rev3/code/authz /root/authz_graph_icde27/rev3/data/deep1m_L12 AZX,BFS,SV-DTC,SV-DTC-deg5,SV-DTC-deg64 10 -1 1 100 1000 64 env={'AUTHZ_DEFER_B': '64'}
+# wall_s: 122.6

@@ -1,0 +1,12 @@
+# closure_mean=59.4 closure_max=133 hubs_mean=37.3 (sample 1000 users)
+# build=4128c8762e6c defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch probe_test=deg
+# data=/root/authz_graph_icde27/rev3/data/syn1m n=1106110 m=2210540 users=1000000 res=66110 updates=50 qpu=10 W=100 B=1000 K=64
+# queries=500 truth_allow_rate=0.2740
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	127.9	1.477	1.467	2.854	88.64	0.30	14.08	4379	106.29	0	0	500	masks_per_entry_mean=1.001229;masks_per_entry_max=3;max_coef_log2=1.584963;ack_p99=14.079102;probe_frac=0.000000;label_entries=741240;prop_nodes=64;prop_trips=146;fa_targeted=0
+TC	107117.3	0.897	0.851	1.823	98617.86	304.94	1217472.53	1616509	21282.92	0	0	500	rows_recomputed=32283;fa_targeted=0
+
+# Maximum resident set size (kbytes): 29767456
+# exit=0
+# cmd: /root/authz_graph_icde27/rev3/code/authz /root/authz_graph_icde27/rev3/data/syn1m AZX,TC 10 50 1 100 1000 64 env={'AUTHZ_DEFER_B': '64'}
+# wall_s: 124.6

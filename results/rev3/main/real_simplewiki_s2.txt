@@ -1,0 +1,19 @@
+# closure_mean=195.4 closure_max=1081 hubs_mean=32.9 (sample 1000 users)
+# build=4128c8762e6c defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch probe_test=deg
+# data=/root/authz_graph_icde27/rev3/data/real_simplewiki n=398264 m=1363953 users=280212 res=16020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.3748
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	270.9	2.174	2.054	4.279	46.41	0.25	105.42	112218	144.09	0	0	100000	masks_per_entry_mean=1.000139;masks_per_entry_max=3;max_coef_log2=19.609583;ack_p99=105.421387;probe_frac=0.000000;label_entries=1678873;prop_nodes=366397;prop_trips=1014733;fa_targeted=0
+BFS	0.0	7.656	7.437	14.214	0.05	0.06	0.10	9	0.00	0	0	100000	;fa_targeted=0
+SPICE-ML100	0.0	5.082	4.706	11.282	0.06	0.06	0.11	1	1.92	3	12	100000	hit_rate=0.320060;fa_targeted=1
+SPICE-FC	0.0	6.025	5.662	12.098	0.06	0.06	0.09	1	1.92	0	0	100000	hit_rate=0.081520;fa_targeted=0
+CLOSURE	1498.2	4.722	4.392	11.006	88.32	0.20	192.46	192053	672.87	0	0	100000	masks_per_entry_mean=1.000024;masks_per_entry_max=3;max_coef_log2=19.616149;ack_p99=192.456543;probe_frac=0.000000;label_entries=9931468;prop_nodes=349824;prop_trips=1252818;fa_targeted=0
+AZX-DEFER-SAFE	274.0	3.106	3.006	5.423	42.44	0.94	120.47	84967	144.09	0	1836	100000	ack_mean=42.443905;ack_p50=0.936035;ack_p99=120.474121;deferred=3174;sync=6824;flushes=29;targeted_flushes=833;targeted_ops=1316;cancel=2;sync_us_mean=60.396397;flush_ms_total=177.257006;fa_targeted=0
+AZX-DEFER-NAIVE	280.9	2.998	2.900	5.249	40.81	0.57	133.49	81237	144.04	66	2300	100000	ack_mean=40.811686;ack_p50=0.570312;ack_p99=133.485352;deferred=4995;sync=5004;flushes=78;targeted_flushes=0;targeted_ops=0;cancel=1;sync_us_mean=45.120055;flush_ms_total=179.326821;fa_targeted=66
+# who: AZX mean 22689.3 us p99 70061.7 | BFS mean 10841.9 us p99 52201.4
+# what: AZX mean 34.0 us p99 127.4 | BFS mean 78.5 us p99 271.7 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 1779748
+# exit=0
+# cmd: /root/authz_graph_icde27/rev3/code/authz /root/authz_graph_icde27/rev3/data/real_simplewiki AZX,BFS,SPICE-ML,SPICE-FC,CLOSURE,DEFER-SAFE,DEFER-NAIVE 10 -1 2 100 1000 64 env={'AUTHZ_DEFER_B': '64'}
+# wall_s: 20.4

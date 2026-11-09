@@ -1,0 +1,17 @@
+# closure_mean=9578.0 closure_max=10594 hubs_mean=764.0 (sample 1000 users)
+# build=4128c8762e6c defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch probe_test=deg
+# data=/root/authz_graph_icde27/rev3/data/deep_L16 n=145020 m=237916 users=100000 res=12020 updates=2000 qpu=100 W=100 B=1000 K=64
+# queries=200000 truth_allow_rate=0.7687
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	938.6	4.793	4.794	5.387	1063.57	0.43	21531.85	42071	407.10	0	0	200000	masks_per_entry_mean=1.096554;masks_per_entry_max=7;max_coef_log2=7.781360;ack_p99=21531.852539;probe_frac=0.998390;label_entries=5625997;prop_nodes=1270123;prop_trips=2911660;fa_targeted=0
+BFS	0.0	212.676	212.684	218.838	0.07	0.06	0.26	7	0.00	0	0	200000	;fa_targeted=0
+SPICE-ML100	0.0	104.034	101.431	167.307	0.11	0.10	0.43	1	3.04	7	219	200000	hit_rate=0.511880;fa_targeted=0
+AZX-DEFER-SAFE	931.0	5.048	5.046	5.656	1023.54	1.40	25039.14	75903	408.46	0	336	200000	ack_mean=1023.544627;ack_p50=1.395020;ack_p99=25039.142578;deferred=648;sync=1352;flushes=5;targeted_flushes=168;targeted_ops=288;cancel=0;sync_us_mean=1302.611218;flush_ms_total=890.742449;fa_targeted=0
+AZX-DEFER-NAIVE	928.8	4.899	4.898	5.492	1037.38	0.75	26974.40	135395	406.74	19	237	200000	ack_mean=1037.376421;ack_p50=0.745117;ack_p99=26974.398926;deferred=970;sync=1030;flushes=15;targeted_flushes=0;targeted_ops=0;cancel=0;sync_us_mean=1003.286650;flush_ms_total=1040.306721;fa_targeted=16
+# who: AZX mean 32788.1 us p99 58217.8 | BFS mean 20989.6 us p99 83463.1
+# what: AZX mean 785.5 us p99 932.5 | BFS mean 3161.0 us p99 4283.0 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 1509788
+# exit=0
+# cmd: /root/authz_graph_icde27/rev3/code/authz /root/authz_graph_icde27/rev3/data/deep_L16 AZX,BFS,SPICE-ML,DEFER-SAFE,DEFER-NAIVE 100 2000 1 100 1000 64 env={'AUTHZ_DEFER_B': '64'}
+# wall_s: 137.3

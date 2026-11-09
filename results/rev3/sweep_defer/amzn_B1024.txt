@@ -1,0 +1,13 @@
+# closure_mean=9.8 closure_max=89 hubs_mean=2.0 (sample 1000 users)
+# build=4128c8762e6c defer_B=1024 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch probe_test=deg
+# data=/root/authz_graph_icde27/rev3/data/amzn n=67426 m=527936 users=36062 res=21581 updates=5000 qpu=10 W=100 B=1000 K=64
+# queries=50000 truth_allow_rate=0.0455
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	5.2	0.250	0.229	0.858	0.05	0.05	0.21	1	3.82	0	0	50000	masks_per_entry_mean=1.000000;masks_per_entry_max=1;max_coef_log2=0.000000;ack_p99=0.206055;probe_frac=0.000000;label_entries=4282;prop_nodes=0;prop_trips=0;fa_targeted=0
+AZX-DEFER-SAFE	10.0	0.396	0.367	1.300	0.98	0.16	20.17	297	3.82	0	344	50000	ack_mean=0.975227;ack_p50=0.158203;ack_p99=20.168945;deferred=4127;sync=867;flushes=0;targeted_flushes=177;targeted_ops=4018;cancel=6;sync_us_mean=4.684408;flush_ms_total=3.363787;fa_targeted=0
+AZX-DEFER-NAIVE	10.1	0.372	0.343	1.243	0.76	0.16	0.70	874	3.82	0	362	50000	ack_mean=0.764142;ack_p50=0.164062;ack_p99=0.699219;deferred=4948;sync=42;flushes=4;targeted_flushes=0;targeted_ops=0;cancel=10;sync_us_mean=0.848424;flush_ms_total=2.766928;fa_targeted=0
+
+# Maximum resident set size (kbytes): 138592
+# exit=0
+# cmd: /root/authz_graph_icde27/rev3/code/authz /root/authz_graph_icde27/rev3/data/amzn AZX,DEFER-SAFE,DEFER-NAIVE 10 5000 1 100 1000 64 env={'AUTHZ_DEFER_B': '1024'}
+# wall_s: 0.2

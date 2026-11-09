@@ -1,0 +1,12 @@
+# closure_mean=3380.5 closure_max=4284 hubs_mean=387.0 (sample 1000 users)
+# build=4128c8762e6c defer_B=64 sv_A=64 apply_cost_us=10 bg_flush=1 timing=batch probe_test=deg
+# data=/root/authz_graph_icde27/rev3/data/deep_L12 n=137020 m=221565 users=100000 res=12020 updates=3000 qpu=10 W=100 B=1000 K=64
+# queries=30000 truth_allow_rate=0.8534
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	217.8	3.921	3.895	5.357	230.13	0.20	5087.76	18064	118.43	0	0	30000	masks_per_entry_mean=1.040081;masks_per_entry_max=5;max_coef_log2=5.000000;ack_p99=5087.761230;probe_frac=0.970633;label_entries=1559560;prop_nodes=528919;prop_trips=1072456;fa_targeted=0
+AZX-DEFER-SAFE	222.0	3.786	3.759	5.456	220.20	0.79	5949.95	17187	118.60	0	150	30000	ack_mean=201.722478;ack_p50=0.789551;ack_p99=4851.791016;deferred=1026;sync=1974;flushes=8;targeted_flushes=260;targeted_ops=472;cancel=0;sync_us_mean=306.014218;flush_ms_total=270.020776;fa_targeted=0
+
+# Maximum resident set size (kbytes): 352388
+# exit=0
+# cmd: /root/authz_graph_icde27/rev3/code/authz /root/authz_graph_icde27/rev3/data/deep_L12 AZX,DEFER-SAFE 10 3000 1 100 1000 64 env={'AUTHZ_DEFER_B': '64', 'AUTHZ_APPLY_COST_US': '10', 'AUTHZ_BG_FLUSH': '1'}
+# wall_s: 4.1

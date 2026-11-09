@@ -1,0 +1,19 @@
+# closure_mean=109.6 closure_max=1612 hubs_mean=73.8 (sample 1000 users)
+# build=4128c8762e6c defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch probe_test=deg
+# data=/root/authz_graph_icde27/rev3/data/orkut n=9240304 m=108338624 users=2307085 res=16020 updates=10000 qpu=10 W=100 B=1000 K=64
+# queries=100000 truth_allow_rate=0.6950
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	10863.7	68.724	67.881	101.932	2.23	0.41	16.30	2384	2179.41	0	0	100000	masks_per_entry_mean=1.000013;masks_per_entry_max=2;max_coef_log2=3.000000;ack_p99=16.298340;probe_frac=0.000000;label_entries=27823041;prop_nodes=14670;prop_trips=28754;fa_targeted=0
+BFS	0.0	82.117	80.138	148.903	0.06	0.06	0.12	8	0.00	0	0	100000	;fa_targeted=0
+SPICE-ML100	0.0	44.368	42.041	92.598	0.09	0.09	0.29	1	1.99	0	1	100000	hit_rate=0.313210;fa_targeted=0
+SPICE-FC	0.0	68.332	67.442	119.129	0.07	0.07	0.16	8	1.99	0	0	100000	hit_rate=0.072690;fa_targeted=0
+CLOSURE	14345.2	62.213	60.917	102.753	1.63	0.28	12.87	2124	2949.86	0	0	100000	masks_per_entry_mean=1.000009;masks_per_entry_max=2;max_coef_log2=3.000000;ack_p99=12.865234;probe_frac=0.000000;label_entries=40377665;prop_nodes=12870;prop_trips=28089;fa_targeted=0
+AZX-DEFER-SAFE	10848.5	97.032	96.113	140.743	8.67	1.90	97.49	2311	2179.41	0	1647	100000	ack_mean=8.673777;ack_p50=1.896484;ack_p99=97.485840;deferred=3953;sync=6047;flushes=27;targeted_flushes=876;targeted_ops=2187;cancel=0;sync_us_mean=8.874449;flush_ms_total=45.363473;fa_targeted=0
+AZX-DEFER-NAIVE	10866.2	94.415	93.553	136.662	6.94	1.10	86.61	2696	2179.41	186	1991	100000	ack_mean=6.941537;ack_p50=1.101562;ack_p99=86.609375;deferred=4913;sync=5087;flushes=76;targeted_flushes=0;targeted_ops=0;cancel=0;sync_us_mean=5.300445;flush_ms_total=37.068154;fa_targeted=186
+# who: AZX mean 691662.9 us p99 739665.4 | BFS mean 226699.5 us p99 250282.9
+# what: AZX mean 83.0 us p99 413.5 | BFS mean 75.0 us p99 411.6 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 34383736
+# exit=0
+# cmd: /root/authz_graph_icde27/rev3/code/authz /root/authz_graph_icde27/rev3/data/orkut AZX,BFS,SPICE-ML,SPICE-FC,CLOSURE,DEFER-SAFE,DEFER-NAIVE 10 -1 1 100 1000 64 env={'AUTHZ_DEFER_B': '64'}
+# wall_s: 448.4
