@@ -1,0 +1,16 @@
+# closure_mean=208.3 closure_max=1007 hubs_mean=37.2 (sample 1000 users)
+# build=9cc732b8a369 defer_B=64 sv_A=64 apply_cost_us=0 bg_flush=0 timing=batch,shuffle probe_test=deg
+# data=/root/authz_graph_icde27/rev4/data/real_hpo n=42185 m=329867 users=5277 res=16020 updates=2000 qpu=10 W=100 B=1000 K=64
+# queries=20000 truth_allow_rate=0.4436
+method	build_ms	q_mean_us	q_p50_us	q_p99_us	u_mean_us	u_p50_us	u_p99_us	u_max_us	index_MB	false_allow	false_deny	queries	extra
+AZX	10.5	1.914	1.820	3.859	1.73	0.16	30.88	328	6.33	0	0	20000	masks_per_entry_mean=1.000467;masks_per_entry_max=2;max_coef_log2=7.727920;ack_p99=30.879883;probe_frac=0.000000;label_entries=64245;prop_nodes=7100;prop_trips=10728;fa_targeted=0
+AZX-K0	10.2	10.535	9.897	23.225	1.29	0.14	25.73	283	6.33	0	0	20000	masks_per_entry_mean=1.000467;masks_per_entry_max=2;max_coef_log2=7.727920;ack_p99=25.730957;probe_frac=0.999150;label_entries=64245;prop_nodes=7100;prop_trips=10728;fa_targeted=0
+AZX-K1000000000	10.2	1.934	1.866	3.765	1.27	0.14	23.99	296	6.33	0	0	20000	masks_per_entry_mean=1.000467;masks_per_entry_max=2;max_coef_log2=7.727920;ack_p99=23.991699;probe_frac=0.000000;label_entries=64245;prop_nodes=7100;prop_trips=10728;fa_targeted=0
+BFS	0.0	5.018	4.893	9.534	0.06	0.06	0.15	1	0.00	0	0	20000	;fa_targeted=0
+# who: AZX mean 472.1 us p99 1428.8 | BFS mean 107.5 us p99 279.7
+# what: AZX mean 39.2 us p99 95.0 | BFS mean 53.7 us p99 168.9 | who/what mismatches 0
+
+# Maximum resident set size (kbytes): 61636
+# exit=0
+# cmd: /root/authz_graph_icde27/rev4/code/authz /root/authz_graph_icde27/rev4/data/real_hpo AZX,AZX-K0,AZX-K1000000000,BFS 10 2000 3 100 1000 64 env={'AUTHZ_DEFER_B': '64', 'AUTHZ_SHUFFLE': '1'}
+# wall_s: 0.8

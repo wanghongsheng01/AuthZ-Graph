@@ -6,6 +6,7 @@ AZX-K<c> instances and AUTHZ_SHUFFLE):
   kconst       AZX (constant 4) and AZX-K1/K2/K8/K16 (the probe/scan test with constants 1, 2, 8, 16, each with
                an index of its own) and BFS, on every graph of the main runs (enwiki: code/server/rev4_driver.sh)
   sweep_depth_bibfs  AZX, BFS, BIBFS on the depth sweep
+  mode         AZX, AZX-K0 (probe), AZX-K1000000000 (scan), BFS on DEEP-12/16, LJ, HPO (3 seeds, one process)
 All groups set AUTHZ_SHUFFLE=1: the methods are timed in a fresh random order for every update.
 Outputs go to results_rev4/<group>/<name>.txt.
 
@@ -37,6 +38,13 @@ for ds in DATA:
 for L in [2, 4, 8, 12, 16]:
     for seed in [1, 2, 3]:
         job('sweep_depth_bibfs', f'deep_L{L}_s{seed}', f'deep_L{L}', BIB, nupd=2000, seed=seed, env=ROT)
+# mode: the probe/scan comparison in one process; AZX-K0 probes every check with work to do and AZX-K1000000000
+# scans it (the test cprobe*K < clab with K = 0 or 10^9), next to the automatic choice and BFS
+for ds in ['deep_L12', 'deep_L16', 'lj', 'real_hpo']:
+    for seed in [1, 2, 3]:
+        job('mode', f'{ds}_s{seed}', ds, 'AZX,AZX-K0,AZX-K1000000000,BFS', nupd=2000, seed=seed, env=ROT)
+if os.environ.get('AUTHZ_ONLY_GROUP'):
+    jobs = [j for j in jobs if j[0] == os.environ['AUTHZ_ONLY_GROUP']]
 # enwiki runs use the exact 128-bit build of the same source (path counts exceed 2^63)
 WIDE = {'real_enwiki'}
 

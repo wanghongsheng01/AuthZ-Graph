@@ -3,13 +3,14 @@
 from matplotlib.patches import FancyBboxPatch
 fig, ax = plt.subplots(figsize=(3.45, 1.05))
 ax.set_xlim(0, 10); ax.set_ylim(0, 3); ax.axis('off')
-N = {'Alice': (0.6, 2.2, '#dce8fb'), 'team-A': (2.35, 2.2, '#dcf2e6'), 'Sales': (4.0, 2.2, '#dcf2e6'),
-     'Analyst': (5.6, 2.2, '#fde8d7'), 'orders': (8.7, 2.2, '#ececec'), 'orders.cost': (8.7, 0.6, '#ececec'),
-     'Contractors': (2.6, 0.6, '#dcf2e6')}
+# node kinds are told apart by the outline colour; white fills keep every label off a coloured shape
+N = {'Alice': (0.6, 2.2, '#1f4fa8'), 'team-A': (2.35, 2.2, '#2e7d4f'), 'Sales': (4.0, 2.2, '#2e7d4f'),
+     'Analyst': (5.6, 2.2, '#c0601a'), 'orders': (8.7, 2.2, '#555555'), 'orders.cost': (8.7, 0.6, '#555555'),
+     'Contractors': (2.6, 0.6, '#2e7d4f')}
 for k, (x0, y0, col) in N.items():
     w = 0.5 + 0.118 * len(k)
     ax.add_patch(FancyBboxPatch((x0 - w / 2, y0 - 0.28), w, 0.56, boxstyle='round,pad=0.02,rounding_size=0.12',
-                                fc=col, ec='#333333', lw=0.6))
+                                fc='white', ec=col, lw=0.9))
     ax.text(x0, y0, k, ha='center', va='center', fontsize=6.6, family='monospace' if k.startswith('orders') else 'serif')
 def arrow(a, b, col='#333333', ls='-', lw=0.8, txt=None, tx=0, ty=0.18):
     (x1, y1, _), (x2, y2, _) = N[a], N[b]
@@ -21,7 +22,8 @@ def arrow(a, b, col='#333333', ls='-', lw=0.8, txt=None, tx=0, ty=0.18):
     if txt: ax.text((s[0] + e[0]) / 2 + tx, (s[1] + e[1]) / 2 + ty, txt, ha='center', va='bottom', fontsize=6, color=col)
 arrow('Alice', 'team-A'); arrow('team-A', 'Sales'); arrow('Sales', 'Analyst')
 arrow('Analyst', 'orders', txt='net=corp'); arrow('orders', 'orders.cost')
-arrow('Contractors', 'orders.cost', col='#b3202a', lw=1.1, txt='deny', ty=0.05)
+arrow('Contractors', 'orders.cost', col='#b3202a', lw=1.1)
+ax.text((N['Contractors'][0] + N['orders.cost'][0]) / 2, 0.65, 'deny', ha='center', va='bottom', fontsize=6, fontweight='bold', color='#333333')
 ax.annotate('', xy=(N['Contractors'][0] - 0.95, 0.6), xytext=(0.6, 1.92),
             arrowprops=dict(arrowstyle='-|>', color='#1f4fa8', lw=1.0, ls='--', mutation_scale=7,
                             connectionstyle='angle,angleA=-90,angleB=180,rad=0'))
