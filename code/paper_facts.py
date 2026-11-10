@@ -187,6 +187,13 @@ def f(x, nd=2):
     return f'{x:.{nd}f}'
 
 
+def fd(x, nd=2):
+    """Fixed decimals for the result tables (second author, 11-11: one number of decimals per metric and table)."""
+    if x is None or (isinstance(x, float) and math.isnan(x)):
+        return '--'
+    return f'{x:,.{nd}f}'.replace(',', '{,}')
+
+
 def fi(n):
     return f'{int(round(float(n))):,}'.replace(',', '{,}')
 
@@ -720,8 +727,8 @@ for d in E2E:
     uF, uB = mean_of(rs, 'AZX', 'u_mean_us'), mean_of(rs, 'BFS', 'u_mean_us')
     tots = [(q * cF + uF, q * cB + uB) for q in qs]
     qstar[d] = (uF - uB) / (cB - cF) if cB > cF else float('inf')
-    ek = mark('e2e', d, {'F': f(cF), 'B': f(cB)}, 'FB')
-    rows.append(f"{name(d)} & {f(uF)} & {ek['F']} & {ek['B']} & " + ' & '.join(f'{f(b / a)}$\\times$' for a, b in tots) + f" & {f(qstar[d])} \\\\")
+    ek = mark('e2e', d, {'F': fd(cF), 'B': fd(cB)}, 'FB')
+    rows.append(f"{name(d)} & {fd(uF, 0)} & {ek['F']} & {ek['B']} & " + ' & '.join(f'{fd(b / a)}$\\times$' for a, b in tots) + f" & {fd(qstar[d])} \\\\")
 for d, w in [('deep_L16', 'DeepSixteen'), ('deep1m_L16', 'DeepOneM'), ('real_enwiki', 'Enw')]:
     if d in qstar:
         rs = e2e_src(d)
@@ -1204,10 +1211,10 @@ for group in [SHALLOW, DEEP, [d for d in SERVER if d in srv]]:
         if not rs:
             continue
         vals = {m: mean_of(rs, m) for m in FAST}
-        mk = mark('latency', d, {m: f(vals[m]) for m in FAST}, ['AZX', 'CLOSURE', 'BFS', 'SPICE-FC'])
+        mk = mark('latency', d, {m: fd(vals[m]) for m in FAST}, ['AZX', 'CLOSURE', 'BFS', 'SPICE-FC'])
         cells = [mk[m] for m in FAST]
         rr = vals['BFS'] / vals['AZX']
-        rows.append(f"{name(d)} & " + ' & '.join(cells) + f" & {f(rr)}$\\times$ \\\\")
+        rows.append(f"{name(d)} & " + ' & '.join(cells) + f" & {fd(rr)}$\\times$ \\\\")
     rows.append(r'\midrule')
 rows = rows[:-1]
 ci = {}
@@ -1245,8 +1252,8 @@ for d in DATA:
     FM = ['AZX', 'SPICE-ML100', 'AZX-DEFER-SAFE', 'AZX-DEFER-NAIVE']
     cl, err = {}, {}
     for m in FM:
-        fa = sum(int(r[m]['false_allow']) for r, _ in rs); fd = sum(int(r[m]['false_deny']) for r, _ in rs)
-        cl[m] = f'{fi(fa)}/{fi(fd)}'; err[m] = (fa, fd)
+        fa = sum(int(r[m]['false_allow']) for r, _ in rs); fdn = sum(int(r[m]['false_deny']) for r, _ in rs)
+        cl[m] = f'{fi(fa)}/{fi(fdn)}'; err[m] = (fa, fdn)
     pl = heavy.get(d, ({}, {}))[0].get('PLL-noDeny')
     cl['PLL'] = fi(pl['false_allow']) if pl else '--'
     mk = mark('fresh', d, cl, FM, key=lambda m: err[m])   # 2-hop ran on other (shorter) streams: not ranked
@@ -1278,26 +1285,28 @@ for group in [SHALLOW, DEEP, [d for d in SERVER if d in heavy]]:
         h = heavy[d][0]
         tc = tc_row(d)
         def cell(src, m, k):
-            return f(src[m][k]) if m in src else 'n/a'
+            return fd(src[m][k]) if m in src else 'n/a'
         mrow = upd.get(d) or (srv[d][0][0] if d in srv else {})
+        # TC (closure materialisation) finished only on part of the graphs; its numbers are in the text, Fig. 3 and the
+        # artifact (second author, 11-11: no columns that are mostly missing)
         uc = mark('heavy_upd', d, {'F': cell(mrow, 'AZX', 'u_mean_us'), 'G': cell(mrow, 'CLOSURE', 'u_mean_us'),
-                                   'T': cell(tc, 'TC', 'u_mean_us'), 'L': cell(h, 'LCR-LI', 'u_mean_us')}, 'FGTL')
+                                   'L': cell(h, 'LCR-LI', 'u_mean_us')}, 'FGL')
         sz = mark('heavy_size', d, {'F': cell(mrow, 'AZX', 'index_MB'), 'G': cell(mrow, 'CLOSURE', 'index_MB'),
-                                    'T': cell(tc, 'TC', 'index_MB'), 'L': cell(h, 'LCR-LI', 'index_MB')}, 'FGTL')
-        rows.append(f"{name(d)} & {uc['F']} & {uc['G']} & {uc['T']} & {uc['L']} & {sz['F']} & {sz['G']} & {sz['T']} & {sz['L']} & "
+                                    'L': cell(h, 'LCR-LI', 'index_MB')}, 'FGL')
+        rows.append(f"{name(d)} & {uc['F']} & {uc['G']} & {uc['L']} & {sz['F']} & {sz['G']} & {sz['L']} & "
                     f"{cell(h,'PLL-noDeny','index_MB')} & {cell(h,'LCR-LI','q_mean_us')} \\\\")
     rows.append(r'\midrule')
 rows = rows[:-1]
 wtab('heavy', r"""\begin{table*}[t]
 \centering
-\caption{Update cost (mean $\mu$s per update) and index size (MB). \sys and GrpClosure (both columns): full streams of the main runs (Table~\ref{tab:latency}). TC, LCR and the 2-hop index (PLL) are measured on a prefix of each stream (1{,}000 updates; 100 on DEEP-12/16, SYN-1M, LJ and the server-scale graphs). TC is shown where it finished within the budget; on SYN-1M it was timed on \TCSynOneMUpdates updates. One PLL rebuild costs its build time (Sec.~\ref{sec:exp-update}). LCR check: mean $\mu$s per check on the prefix. Bold, underlined: lowest, second-lowest update cost and exact index size (2-hop is not exact).}
+\caption{Update cost (mean $\mu$s per update) and index size (MB). \sys and GrpClosure (both columns): full streams of the main runs (Table~\ref{tab:latency}). LCR and the 2-hop index (PLL) are measured on a prefix of each stream (1{,}000 updates; 100 on DEEP-12/16, SYN-1M, LJ and the server-scale graphs); TC is compared in Section~\ref{sec:exp-update} and Fig.~\ref{fig:update}. One PLL rebuild costs its build time (Sec.~\ref{sec:exp-update}). LCR check: mean $\mu$s per check on the prefix. Bold, underlined: lowest, second-lowest update cost and exact index size (2-hop is not exact).}
 \label{tab:heavy}
 \small
-\begin{tabular}{lrrrrrrrrrr}
+\begin{tabular}{lrrrrrrrr}
 \toprule
- & \multicolumn{4}{c}{Update cost ($\mu$s)} & \multicolumn{5}{c}{Index size (MB)} & LCR \\
-\cmidrule(lr){2-5}\cmidrule(lr){6-10}
-Dataset & FLIX & GrpCl & TC & LCR & FLIX & GrpCl & TC & LCR & 2-hop & check \\
+ & \multicolumn{3}{c}{Update cost ($\mu$s)} & \multicolumn{4}{c}{Index size (MB)} & LCR \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-8}
+Dataset & FLIX & GrpCl & LCR & FLIX & GrpCl & LCR & 2-hop & check ($\mu$s) \\
 \midrule
 """ + '\n'.join(rows) + r"""
 \bottomrule
@@ -1313,8 +1322,8 @@ for ds in ['ent', 'syn100k', 'amzn']:
             continue
         r = df[(ds, B)][0]
         s, n, a = r['AZX-DEFER-SAFE'], r.get('AZX-DEFER-NAIVE'), r['AZX']
-        am = mark('defer_ack', (ds, B), {'D': f(ack(s, 'mean')), 'S': f(a['u_mean_us'])}, 'DS')
-        a9 = mark('defer_p99', (ds, B), {'D': f(ack(s, 'p99')), 'S': f(a['u_p99_us'])}, 'DS')
+        am = mark('defer_ack', (ds, B), {'D': fd(ack(s, 'mean')), 'S': fd(a['u_mean_us'])}, 'DS')
+        a9 = mark('defer_p99', (ds, B), {'D': fd(ack(s, 'p99')), 'S': fd(a['u_p99_us'])}, 'DS')
         fa = mark('defer_fa', (ds, B), {'D': f"{fi(s['false_allow'])}/{fi(s['false_deny'])}", 'L': fi(n['false_allow']) if n else '--'}, 'DL',
                   key=lambda k: s['false_allow'] if k == 'D' else n['false_allow'])
         rows.append(f"{name(ds)} & $B{{=}}{B}$ & {pct(share(s))}\\% & {am['D']} & {a9['D']} & {am['S']} & {a9['S']} & {fa['D']} & {fa['L']} \\\\")
@@ -1322,8 +1331,8 @@ rows.append(r'\midrule')
 if ap:
     for (ds, c), r in ap.items():
         s, a = r['AZX-DEFER-SAFE'], r['AZX']
-        am = mark('defer_ack', (ds, c), {'D': f(ack(s, 'mean')), 'S': f(a['u_mean_us'])}, 'DS')
-        a9 = mark('defer_p99', (ds, c), {'D': f(ack(s, 'p99')), 'S': f(r['AZX']['x'].get('ack_p99', a['u_p99_us']))}, 'DS')
+        am = mark('defer_ack', (ds, c), {'D': fd(ack(s, 'mean')), 'S': fd(a['u_mean_us'])}, 'DS')
+        a9 = mark('defer_p99', (ds, c), {'D': fd(ack(s, 'p99')), 'S': fd(r['AZX']['x'].get('ack_p99', a['u_p99_us']))}, 'DS')
         rows.append(f"{name(ds)} & {c}\\,$\\mu$s & {pct(share(s))}\\% & {am['D']} & {a9['D']} & {am['S']} & {a9['S']} & "
                     f"{fi(s['false_allow'])}/{fi(s['false_deny'])} & -- \\\\")
 else:
@@ -1333,7 +1342,7 @@ wtab('defer', r"""\begin{table}[t]
 \caption{Deferred maintenance. Top: flush threshold $B$ (5{,}000 updates). Bottom: each label propagation costs 10 or 100\,$\mu$s more (a replica round trip), with background threshold flushes ($B{=}64$). Ack: $\mu$s until a write is acknowledged, flushes included. Def.: share of deferred updates; FA/FD: false allows / denies of FLIX-D; Lag: false allows. Bold: the better of FLIX-D and FLIX (Ack, p99) and of FLIX-D and Lag (FA).}
 \label{tab:defer}
 \footnotesize
-\setlength{\tabcolsep}{2.0pt}
+\setlength{\tabcolsep}{1.8pt}
 \begin{tabular}{llrrrrrrr}
 \toprule
  & & \multicolumn{3}{c}{FLIX-D} & \multicolumn{2}{c}{FLIX (sync)} & & \\
@@ -1383,7 +1392,7 @@ Data & $q$ & Del./deny & Hit & FLIX FA & C-ML FA & FA/del. & Lag FA \\
 rows = []
 for d, r in sv.items():
     VS = SVV[1:] if have_var else SVV[:1]
-    mk = mark('sv', d, {m: (f(r[m]['q_mean_us']) if m in r else '--') for m in ['AZX', 'BFS'] + VS}, ['AZX', 'BFS'] + VS)
+    mk = mark('sv', d, {m: (fd(r[m]['q_mean_us']) if m in r else '--') for m in ['AZX', 'BFS'] + VS}, ['AZX', 'BFS'] + VS)
     cells = []
     for v in VS:
         if v in r:
@@ -1416,31 +1425,34 @@ Data & FLIX & BFS & """ + ('Check & FB & Check & FB' if have_var else 'Check & F
 
 # real hierarchies
 rows = []
+REALFA = []
 for k in REAL:
     for v in (k + '_m4', k):
         if v not in realm:
             continue
         rs = realm[v]; info = rs[0][1]; m = meta(v)
         bq, aq = mean_of(rs, 'BFS'), mean_of(rs, 'AZX')
-        ao_ = f(mean_of(abl[v], 'AZX-NODEG') / mean_of(abl[v], 'AZX')) + r'$\times$' if v in abl else '--'
-        rk = mark('real', v, {'B': f(bq), 'F': f(aq)}, 'BF')
-        rows.append(f"{name(v)} & {m.get('depth_max', '--')} & {f(info.get('closure'))} & {f(info.get('hubs'))} & {rk['B']} & {rk['F']} & "
-                    f"{f(bq / aq)}$\\times$ & {ao_} & {f(mean_of(rs, 'AZX', 'u_mean_us'))} & {fi(sum(int(r['AZX']['false_allow']) for r, _ in rs))} \\\\")
+        ao_ = fd(mean_of(abl[v], 'AZX-NODEG') / mean_of(abl[v], 'AZX')) + r'$\times$' if v in abl else '--'
+        rk = mark('real', v, {'B': fd(bq), 'F': fd(aq)}, 'BF')
+        REALFA.append(sum(int(r['AZX']['false_allow']) for r, _ in rs))   # all zero: stated in the caption, no column
+        rows.append(f"{name(v)} & {m.get('depth_max', '--')} & {fd(info.get('closure'), 1)} & {fd(info.get('hubs'), 1)} & {rk['B']} & {rk['F']} & "
+                    f"{fd(bq / aq)}$\\times$ & {ao_} & {fd(mean_of(rs, 'AZX', 'u_mean_us'), 1)} \\\\")
     if k in deg:
         rs = deg[k]; bq, aq = mean_of(rs, 'BFS'), mean_of(rs, 'AZX')
         rows.append(f"{name(k)}$^{{d}}$ & \\multicolumn{{3}}{{r}}{{\\emph{{original test:}} {f(spd(ctl[k]))}$\\times$}} & {f(bq)} & {f(aq)} & {f(bq / aq)}$\\times$ & -- & "
                     f"{fi(sum(int(r['AZX']['false_allow']) for r, _ in rs))} \\\\")
+assert not any(REALFA), REALFA   # the caption states that FLIX returned no false allow on any hierarchy
 if not rows:
-    rows = [r'\multicolumn{10}{l}{\todo{real hierarchies pending}} \\']
+    rows = [r'\multicolumn{9}{l}{\todo{real hierarchies pending}} \\']
 wtab('real', r"""\begin{table}[t]
 \centering
-\caption{Real nesting hierarchies (3 seeds""" + (', ' + ', '.join(f'{name(d)}: {SHORT[d]}' for d in SHORT if d.startswith('real')) if any(d.startswith('real') for d in SHORT) else '') + r"""; mean $\mu$s). Depth: longest nesting chain; Upd.: mean $\mu$s per update; FA: false allows of \sys. $^{m}$: users with at least four memberships get a personal group, which materialises their label (same allow set). $-\deg$: check time when the probe/scan test omits $\deg^+(u)$, relative to \sys in the same process. Faster method in bold.}
+\caption{Real nesting hierarchies (3 seeds""" + (', ' + ', '.join(f'{name(d)}: {SHORT[d]}' for d in SHORT if d.startswith('real')) if any(d.startswith('real') for d in SHORT) else '') + r"""; mean $\mu$s). Depth: longest nesting chain; Upd.: mean $\mu$s per update. \sys returned no false allow on any hierarchy. $^{m}$: users with at least four memberships get a personal group, which materialises their label (same allow set). $-\deg$: check time when the probe/scan test omits $\deg^+(u)$, relative to \sys in the same process. Faster method in bold.}
 \label{tab:real}
 \footnotesize
-\setlength{\tabcolsep}{2.6pt}
-\begin{tabular}{lrrrrrrrrr}
+\setlength{\tabcolsep}{2.1pt}
+\begin{tabular}{lrrrrrrrr}
 \toprule
-Hierarchy & Depth & Clos. & Hubs & BFS & FLIX & $\frac{\text{BFS}}{\text{FLIX}}$ & $-\deg$ & Upd. & FA \\
+Hierarchy & Depth & Clos. & Hubs & BFS & FLIX & $\frac{\text{BFS}}{\text{FLIX}}$ & $-\deg$ & Upd. \\
 \midrule
 """ + '\n'.join(rows) + r"""
 \bottomrule
@@ -1474,11 +1486,13 @@ mac('LatNotTopTwo', ', '.join(name(d) for (t, d, k), r in sorted(RANKS.items(), 
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-plt.rcParams.update({'font.size': 8, 'font.family': 'serif', 'axes.spines.top': False, 'axes.spines.right': False,
+# second author, 11-11: the paper's font (Times), a colour-blind-safe palette (Okabe-Ito), FLIX always in vermillion
+plt.rcParams.update({'font.size': 8, 'font.family': 'serif', 'font.serif': ['Times New Roman', 'Times', 'STIXGeneral'], 'font.monospace': ['Courier New', 'Courier'],
+                     'mathtext.fontset': 'stix', 'axes.spines.top': False, 'axes.spines.right': False,
                      'pdf.fonttype': 42, 'axes.linewidth': 0.6})
 LS = {'AZX': '-', 'BFS': '--', 'CLOSURE': ':'}
 LBL = {'AZX': 'FLIX', 'BFS': 'BFS', 'CLOSURE': 'GrpClosure', 'TC': 'TC', 'LCR': 'LCR'}
-C = {'AZX': '#2a6fdb', 'BFS': '#e0702b', 'CLOSURE': '#2e9e6b', 'TC': '#8a5cc2', 'LCR': '#c43d5a'}
+C = {'AZX': '#D55E00', 'BFS': '#0072B2', 'CLOSURE': '#009E73', 'TC': '#CC79A7', 'LCR': '#56B4E9'}
 
 # depth sweep with 95% CI over seeds
 Ls = sorted(dep)
@@ -1490,7 +1504,8 @@ for meth in ['BFS', 'CLOSURE', 'AZX']:
             continue
         ys = [stt.mean(r[meth][key] for r, _ in dep[L]) for L in Ls]
         es = [ci95([r[meth][key] for r, _ in dep[L]]) for L in Ls]
-        ax[j].errorbar(xs, ys, yerr=es, lw=1.2, color=C[meth], label=LBL[meth], ls=LS[meth], capsize=1.5, elinewidth=0.6)
+        ax[j].errorbar(xs, ys, yerr=es, lw=1.8 if meth == 'AZX' else 1.1, color=C[meth], label=LBL[meth], ls=LS[meth],
+                       capsize=1.5, elinewidth=0.6, marker='o' if meth == 'AZX' else None, ms=2.5, zorder=3 if meth == 'AZX' else 2)
 for a, t in zip(ax, ['check latency ($\\mu$s)', 'update cost ($\\mu$s)']):
     a.set_xscale('log'); a.set_yscale('log'); a.set_xlabel('mean user closure'); a.set_ylabel(t)
     a.grid(True, which='major', lw=0.3, alpha=0.4)
