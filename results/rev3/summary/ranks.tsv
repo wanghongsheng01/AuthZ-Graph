@@ -1,0 +1,12 @@
+table	key	best	second	rows	not_best
+latency	AZX	12	3	17	syn10k; amzn; lj_full; orkut; friendster
+fresh	AZX	11	0	11	
+heavy_upd	F	8	6	17	syn10k; syn1m; youtube; dblp; lj; syn10m; lj_full; orkut; friendster
+heavy_size	F	4	13	17	syn1m; amzn; youtube; dblp; lj; deep_L12; deep_L16; deep1m_L12; deep1m_L16; syn10m; lj_full; orkut; friendster
+sv	AZX	13	2	15	amzn; youtube
+real	F	7	0	7	
+e2e	F	3	0	3	
+ratio	F	12	0	12	
+defer_ack	D	3	10	13	('ent', 16); ('ent', 64); ('ent', 1024); ('syn100k', 16); ('syn100k', 64); ('syn100k', 1024); ('amzn', 16); ('amzn', 64); ('amzn', 1024); ('syn100k', 10)
+defer_p99	D	1	12	13	('ent', 16); ('ent', 64); ('ent', 1024); ('syn100k', 16); ('syn100k', 64); ('syn100k', 1024); ('amzn', 16); ('amzn', 64); ('amzn', 1024); ('syn100k', 10); ('syn100k', 100); ('deep_L12', 100)
+defer_fa	D	9	0	9	

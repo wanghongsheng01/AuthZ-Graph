@@ -195,6 +195,30 @@ def pct(x):
     return f'{100 * x:.0f}' if x >= 0.01 or x == 0 else f'{100 * x:.1f}'
 
 
+# best/second marks for the result tables (second author, 11-10): rank by the PRINTED value, so ties are all bold;
+# the second-best distinct value is underlined. RANKS collects (table, row, key) -> rank for the counts in the text.
+RANKS = {}
+def pval(s):
+    return float(s.replace('{,}', '').replace(',', '').replace('$\\times$', ''))
+def mark(table, row, cells, keys, lower=True, second=True, key=None):
+    """cells: dict key -> printed string; keys: the competing keys. Returns a dict with marked strings."""
+    key = key or (lambda k: pval(cells[k]))
+    ok = [k for k in keys if cells.get(k) not in (None, '--', 'n/a')]
+    vals = sorted({key(k) for k in ok}, reverse=not lower)
+    out = dict(cells)
+    for k in ok:
+        r = vals.index(key(k))
+        RANKS[(table, row, k)] = r
+        if r == 0:
+            out[k] = r'\textbf{' + cells[k] + '}'
+        elif r == 1 and second and len(ok) > 2:
+            out[k] = r'\underline{' + cells[k] + '}'
+    return out
+def standing(table, k):
+    rs = [r for (t, _, kk), r in RANKS.items() if t == table and kk == k]
+    return sum(r == 0 for r in rs), sum(r == 1 for r in rs), len(rs)
+
+
 TQ = {2: 12.706, 3: 4.303, 4: 3.182, 5: 2.776}   # two-sided 95% t quantiles, df = n - 1
 
 
@@ -696,7 +720,8 @@ for d in E2E:
     uF, uB = mean_of(rs, 'AZX', 'u_mean_us'), mean_of(rs, 'BFS', 'u_mean_us')
     tots = [(q * cF + uF, q * cB + uB) for q in qs]
     qstar[d] = (uF - uB) / (cB - cF) if cB > cF else float('inf')
-    rows.append(f"{name(d)} & {f(uF)} & {f(cF)} & {f(cB)} & " + ' & '.join(f'{f(b / a)}$\\times$' for a, b in tots) + f" & {f(qstar[d])} \\\\")
+    ek = mark('e2e', d, {'F': f(cF), 'B': f(cB)}, 'FB')
+    rows.append(f"{name(d)} & {f(uF)} & {ek['F']} & {ek['B']} & " + ' & '.join(f'{f(b / a)}$\\times$' for a, b in tots) + f" & {f(qstar[d])} \\\\")
 for d, w in [('deep_L16', 'DeepSixteen'), ('deep1m_L16', 'DeepOneM'), ('real_enwiki', 'Enw')]:
     if d in qstar:
         rs = e2e_src(d)
@@ -712,7 +737,7 @@ if not rows:
     rows = [r'\multicolumn{9}{l}{\todo{end-to-end inputs pending}} \\']
 wtab('e2e', r"""\begin{table}[t]
 \centering
-\caption{End-to-end work per update batch of $q$ checks and one write: ratio of total BFS time to total \sys time ($q\cdot\text{check}+\text{update}$, means of the main runs). $u$: \sys mean update cost ($\mu$s); $q^*$: break-even checks per update (BFS updates cost $<$0.1\,$\mu$s).}
+\caption{End-to-end work per update batch of $q$ checks and one write: ratio of total BFS time to total \sys time ($q\cdot\text{check}+\text{update}$, means of the main runs). $u$: \sys mean update cost ($\mu$s); $q^*$: break-even checks per update (BFS updates cost $<$0.1\,$\mu$s). Faster check in bold.}
 \label{tab:e2e}
 \footnotesize
 \setlength{\tabcolsep}{2.2pt}
@@ -1179,13 +1204,8 @@ for group in [SHALLOW, DEEP, [d for d in SERVER if d in srv]]:
         if not rs:
             continue
         vals = {m: mean_of(rs, m) for m in FAST}
-        exact_best = min(vals[m] for m in ['AZX', 'CLOSURE', 'BFS', 'SPICE-FC'] if not math.isnan(vals[m]))
-        cells = []
-        for m in FAST:
-            s = f(vals[m])
-            if m != 'SPICE-ML100' and vals[m] == exact_best:
-                s = r'\textbf{' + s + '}'
-            cells.append(s)
+        mk = mark('latency', d, {m: f(vals[m]) for m in FAST}, ['AZX', 'CLOSURE', 'BFS', 'SPICE-FC'])
+        cells = [mk[m] for m in FAST]
         rr = vals['BFS'] / vals['AZX']
         rows.append(f"{name(d)} & " + ' & '.join(cells) + f" & {f(rr)}$\\times$ \\\\")
     rows.append(r'\midrule')
@@ -1203,7 +1223,7 @@ short_main = [name(d) for d in DATA if d in SHORT]
 seed_note = ('; ' + ', '.join(f'{name(d)}: {SHORT[d]} seeds' for d in DATA if d in SHORT) + ' (a run was killed)') if short_main else ''
 wtab('latency', r"""\begin{table}[t]
 \centering
-\caption{Mean check latency ($\mu$s; batch-timed; 3 seeds, 1 for SYN-1M, LJ and the server-scale graphs in the last block""" + seed_note + '; ' + ci_txt + r"""). Best exact method in bold. C-ML is not exact (Table~\ref{tab:fresh}).}
+\caption{Mean check latency ($\mu$s; batch-timed; 3 seeds, 1 for SYN-1M, LJ and the server-scale graphs in the last block""" + seed_note + '; ' + ci_txt + r"""). Fastest exact method in bold, second underlined; C-ML is not exact (Table~\ref{tab:fresh}).}
 \label{tab:latency}
 \small
 \setlength{\tabcolsep}{3.2pt}
@@ -1222,16 +1242,18 @@ rows = []
 for d in DATA:
     rs = main[d]
     q = sum(r['AZX']['queries'] for r, _ in rs)
-    cells = []
-    for m in ['AZX', 'SPICE-ML100', 'AZX-DEFER-SAFE', 'AZX-DEFER-NAIVE']:
+    FM = ['AZX', 'SPICE-ML100', 'AZX-DEFER-SAFE', 'AZX-DEFER-NAIVE']
+    cl, err = {}, {}
+    for m in FM:
         fa = sum(int(r[m]['false_allow']) for r, _ in rs); fd = sum(int(r[m]['false_deny']) for r, _ in rs)
-        cells.append(f'{fi(fa)}/{fi(fd)}')
+        cl[m] = f'{fi(fa)}/{fi(fd)}'; err[m] = (fa, fd)
     pl = heavy.get(d, ({}, {}))[0].get('PLL-noDeny')
-    cells.append(fi(pl['false_allow']) if pl else '--')
-    rows.append(f"{name(d)} & {fi(q)} & " + ' & '.join(cells) + r' \\')
+    cl['PLL'] = fi(pl['false_allow']) if pl else '--'
+    mk = mark('fresh', d, cl, FM, key=lambda m: err[m])   # 2-hop ran on other (shorter) streams: not ranked
+    rows.append(f"{name(d)} & {fi(q)} & " + ' & '.join(mk[m] for m in FM + ['PLL']) + r' \\')
 wtab('fresh', r"""\begin{table}[t]
 \centering
-\caption{False allows / false denies against the oracle, all checks of all seeds. C-ML: quantised check cache; FLIX-D: \sys with polarity-aware deferral; Lag: deferral of every insertion; 2-hop: reachability labels without conditions or deny, false allows only, on the shorter heavy runs (\PLLnq checks in total).}
+\caption{False allows / false denies against the oracle, all checks of all seeds. 2-hop: false allows only, on the shorter heavy runs (\PLLnq checks; not ranked). Bold, underlined: fewest, second-fewest errors (false allows first).}
 \label{tab:fresh}
 \footnotesize
 \setlength{\tabcolsep}{1.6pt}
@@ -1241,7 +1263,7 @@ Dataset & Checks & FLIX & C-ML & FLIX-D & Lag & 2-hop \\
 \midrule
 """ + '\n'.join(rows) + r"""
 \midrule
-""" + f"Total & {fi(nq)} & {fi(tot['AZX'][0])}/{fi(tot['AZX'][1])} & {fi(tot['SPICE-ML100'][0])}/{fi(tot['SPICE-ML100'][1])} & {fi(tot['AZX-DEFER-SAFE'][0])}/{fi(tot['AZX-DEFER-SAFE'][1])} & {fi(tot['AZX-DEFER-NAIVE'][0])}/{fi(tot['AZX-DEFER-NAIVE'][1])} & {fi(sum(x['false_allow'] for _, x in plfa))} \\\\" + r"""
+""" + (lambda mk: f"Total & {fi(nq)} & {mk['AZX']} & {mk['SPICE-ML100']} & {mk['AZX-DEFER-SAFE']} & {mk['AZX-DEFER-NAIVE']} & {fi(sum(x['false_allow'] for _, x in plfa))} \\\\")(mark('fresh_total', 'all', {m: f"{fi(tot[m][0])}/{fi(tot[m][1])}" for m in FM}, FM, key=lambda m: tuple(tot[m]))) + r"""
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1258,15 +1280,17 @@ for group in [SHALLOW, DEEP, [d for d in SERVER if d in heavy]]:
         def cell(src, m, k):
             return f(src[m][k]) if m in src else 'n/a'
         mrow = upd.get(d) or (srv[d][0][0] if d in srv else {})
-        rows.append(f"{name(d)} & {cell(mrow,'AZX','u_mean_us')} & {cell(mrow,'CLOSURE','u_mean_us')} & "
-                    f"{cell(tc,'TC','u_mean_us')} & {cell(h,'LCR-LI','u_mean_us')} & "
-                    f"{cell(mrow,'AZX','index_MB')} & {cell(mrow,'CLOSURE','index_MB')} & "
-                    f"{cell(tc,'TC','index_MB')} & {cell(h,'LCR-LI','index_MB')} & {cell(h,'PLL-noDeny','index_MB')} & {cell(h,'LCR-LI','q_mean_us')} \\\\")
+        uc = mark('heavy_upd', d, {'F': cell(mrow, 'AZX', 'u_mean_us'), 'G': cell(mrow, 'CLOSURE', 'u_mean_us'),
+                                   'T': cell(tc, 'TC', 'u_mean_us'), 'L': cell(h, 'LCR-LI', 'u_mean_us')}, 'FGTL')
+        sz = mark('heavy_size', d, {'F': cell(mrow, 'AZX', 'index_MB'), 'G': cell(mrow, 'CLOSURE', 'index_MB'),
+                                    'T': cell(tc, 'TC', 'index_MB'), 'L': cell(h, 'LCR-LI', 'index_MB')}, 'FGTL')
+        rows.append(f"{name(d)} & {uc['F']} & {uc['G']} & {uc['T']} & {uc['L']} & {sz['F']} & {sz['G']} & {sz['T']} & {sz['L']} & "
+                    f"{cell(h,'PLL-noDeny','index_MB')} & {cell(h,'LCR-LI','q_mean_us')} \\\\")
     rows.append(r'\midrule')
 rows = rows[:-1]
 wtab('heavy', r"""\begin{table*}[t]
 \centering
-\caption{Update cost (mean $\mu$s per update) and index size (MB). \sys and GrpClosure (both columns): full streams of the main runs (Table~\ref{tab:latency}). TC, LCR and the 2-hop index (PLL) are measured on a prefix of each stream (1{,}000 updates; 100 on DEEP-12/16, SYN-1M, LJ and the server-scale graphs). TC is shown where it finished within the budget; on SYN-1M it was timed on \TCSynOneMUpdates updates. One PLL rebuild costs its build time (Sec.~\ref{sec:exp-update}). LCR check: mean $\mu$s per check on the prefix.}
+\caption{Update cost (mean $\mu$s per update) and index size (MB). \sys and GrpClosure (both columns): full streams of the main runs (Table~\ref{tab:latency}). TC, LCR and the 2-hop index (PLL) are measured on a prefix of each stream (1{,}000 updates; 100 on DEEP-12/16, SYN-1M, LJ and the server-scale graphs). TC is shown where it finished within the budget; on SYN-1M it was timed on \TCSynOneMUpdates updates. One PLL rebuild costs its build time (Sec.~\ref{sec:exp-update}). LCR check: mean $\mu$s per check on the prefix. Bold, underlined: lowest, second-lowest update cost and exact index size (2-hop is not exact).}
 \label{tab:heavy}
 \small
 \begin{tabular}{lrrrrrrrrrr}
@@ -1289,19 +1313,24 @@ for ds in ['ent', 'syn100k', 'amzn']:
             continue
         r = df[(ds, B)][0]
         s, n, a = r['AZX-DEFER-SAFE'], r.get('AZX-DEFER-NAIVE'), r['AZX']
-        rows.append(f"{name(ds)} & $B{{=}}{B}$ & {pct(share(s))}\\% & {f(ack(s,'mean'))} & {f(ack(s,'p99'))} & {f(a['u_mean_us'])} & {f(a['u_p99_us'])} & "
-                    f"{fi(s['false_allow'])}/{fi(s['false_deny'])} & {fi(n['false_allow']) if n else '--'} \\\\")
+        am = mark('defer_ack', (ds, B), {'D': f(ack(s, 'mean')), 'S': f(a['u_mean_us'])}, 'DS')
+        a9 = mark('defer_p99', (ds, B), {'D': f(ack(s, 'p99')), 'S': f(a['u_p99_us'])}, 'DS')
+        fa = mark('defer_fa', (ds, B), {'D': f"{fi(s['false_allow'])}/{fi(s['false_deny'])}", 'L': fi(n['false_allow']) if n else '--'}, 'DL',
+                  key=lambda k: s['false_allow'] if k == 'D' else n['false_allow'])
+        rows.append(f"{name(ds)} & $B{{=}}{B}$ & {pct(share(s))}\\% & {am['D']} & {a9['D']} & {am['S']} & {a9['S']} & {fa['D']} & {fa['L']} \\\\")
 rows.append(r'\midrule')
 if ap:
     for (ds, c), r in ap.items():
         s, a = r['AZX-DEFER-SAFE'], r['AZX']
-        rows.append(f"{name(ds)} & {c}\\,$\\mu$s & {pct(share(s))}\\% & {f(ack(s,'mean'))} & {f(ack(s,'p99'))} & {f(a['u_mean_us'])} & {f(r['AZX']['x'].get('ack_p99', a['u_p99_us']))} & "
+        am = mark('defer_ack', (ds, c), {'D': f(ack(s, 'mean')), 'S': f(a['u_mean_us'])}, 'DS')
+        a9 = mark('defer_p99', (ds, c), {'D': f(ack(s, 'p99')), 'S': f(r['AZX']['x'].get('ack_p99', a['u_p99_us']))}, 'DS')
+        rows.append(f"{name(ds)} & {c}\\,$\\mu$s & {pct(share(s))}\\% & {am['D']} & {a9['D']} & {am['S']} & {a9['S']} & "
                     f"{fi(s['false_allow'])}/{fi(s['false_deny'])} & -- \\\\")
 else:
     rows.append(r'\multicolumn{9}{l}{\todo{expensive-apply runs pending (results\_rev1/sweep\_apply)}} \\')
 wtab('defer', r"""\begin{table}[t]
 \centering
-\caption{Deferred maintenance. Top: flush threshold $B$ (5{,}000 updates). Bottom: each label propagation costs an extra 10 or 100\,$\mu$s (e.g., a replica round trip); threshold flushes run in the background, while applying the buffered subject insertions before a restrictive write stays on its acknowledgment path ($B{=}64$). Ack: time until a write is acknowledged, over all writes including threshold flushes ($\mu$s). Def.: share of deferred updates; FA/FD: false allows / denies of FLIX-D; Lag: false allows.}
+\caption{Deferred maintenance. Top: flush threshold $B$ (5{,}000 updates). Bottom: each label propagation costs 10 or 100\,$\mu$s more (a replica round trip), with background threshold flushes ($B{=}64$). Ack: $\mu$s until a write is acknowledged, flushes included. Def.: share of deferred updates; FA/FD: false allows / denies of FLIX-D; Lag: false allows. Bold: the better of FLIX-D and FLIX (Ack, p99) and of FLIX-D and Lag (FA).}
 \label{tab:defer}
 \footnotesize
 \setlength{\tabcolsep}{2.0pt}
@@ -1319,25 +1348,30 @@ Data & Setting & Def. & Ack & p99 & Ack & p99 & FA/FD & Lag \\
 
 # read/write ratio
 rows = []
+UPD = {}
 for ds in ['ent', 'syn100k', 'deep_L16', 'amzn']:
     for q in [10, 100, 1000]:
         if (ds, q) not in rat:
             continue
         r, nu, rev = rat[(ds, q)]
         c = r['SPICE-ML100']
-        rows.append(f"{name(ds)} & {q} & {fi(nu)} & {fi(rev) if rev is not None else '--'} & {pct(c['x'].get('hit_rate', 0))}\\% & {fi(c['false_allow'])} & "
-                    f"{f(c['false_allow'] / max(1, rev)) if rev else '--'} & {fi(r['AZX-DEFER-NAIVE']['false_allow']) if 'AZX-DEFER-NAIVE' in r else '--'} \\\\")
+        fk = mark('ratio', (ds, q), {'F': fi(r['AZX']['false_allow']), 'C': fi(c['false_allow']),
+                                     'L': fi(r['AZX-DEFER-NAIVE']['false_allow']) if 'AZX-DEFER-NAIVE' in r else '--'}, 'FCL')
+        UPD.setdefault(q, set()).add(nu)
+        rows.append(f"{name(ds)} & {q} & {fi(rev) if rev is not None else '--'} & {pct(c['x'].get('hit_rate', 0))}\\% & {fk['F']} & {fk['C']} & "
+                    f"{f(c['false_allow'] / max(1, rev)) if rev else '--'} & {fk['L']} \\\\")
+assert all(len(v) == 1 for v in UPD.values()), UPD   # the caption states one update count per q
 if not rows:
     rows = [r'\multicolumn{8}{l}{\todo{read/write sweep pending (results\_rev1/sweep\_ratio)}} \\']
 wtab('ratio', r"""\begin{table}[t]
 \centering
-\caption{Read/write ratio: checks per update $q$. Del./deny: grant and membership deletions plus deny insertions (revoking subject insertions are not counted). C-ML: Zanzibar-style cache with a window of 100 writes (5\,s at \WriteRate writes/s); FA/del.: its false allows per such update.}
+\caption{Read/write ratio: checks per update $q$, with """ + ', '.join(f'{fi(next(iter(v)))}' for q, v in sorted(UPD.items())) + r""" updates for $q={}$10, 100, 1\,000. Del./deny: grant and membership deletions plus deny insertions (revoking subject insertions are not counted). C-ML: Zanzibar-style cache with a window of 100 writes (5\,s at \WriteRate writes/s); FA/del.: its false allows per such update. Fewest false allows in bold, second underlined.}
 \label{tab:ratio}
 \footnotesize
 \setlength{\tabcolsep}{2.4pt}
 \begin{tabular}{lrrrrrrr}
 \toprule
-Data & $q$ & Upd. & Del./deny & Hit & C-ML FA & FA/del. & Lag FA \\
+Data & $q$ & Del./deny & Hit & FLIX FA & C-ML FA & FA/del. & Lag FA \\
 \midrule
 """ + '\n'.join(rows) + r"""
 \bottomrule
@@ -1348,21 +1382,23 @@ Data & $q$ & Upd. & Del./deny & Hit & C-ML FA & FA/del. & Lag FA \\
 # SV-DTC
 rows = []
 for d, r in sv.items():
+    VS = SVV[1:] if have_var else SVV[:1]
+    mk = mark('sv', d, {m: (f(r[m]['q_mean_us']) if m in r else '--') for m in ['AZX', 'BFS'] + VS}, ['AZX', 'BFS'] + VS)
     cells = []
-    for v in (SVV[1:] if have_var else SVV[:1]):
+    for v in VS:
         if v in r:
-            cells.append(f"{f(r[v]['q_mean_us'])} & {pct(r[v]['x'].get('fallback_frac', 0))}\\%")
+            cells.append(f"{mk[v]} & {pct(r[v]['x'].get('fallback_frac', 0))}\\%")
         else:
             cells.append('-- & --')
     b = min([v for v in SVV if v in r], key=lambda v: r[v]['q_mean_us'])
-    rows.append(f"{name(d)} & {f(r['AZX']['q_mean_us'])} & {f(r['BFS']['q_mean_us'])} & " + ' & '.join(cells) + f" & {fi(r[b]['false_allow'])} \\\\")
+    rows.append(f"{name(d)} & {mk['AZX']} & {mk['BFS']} & " + ' & '.join(cells) + f" & {fi(r[b]['false_allow'])} \\\\")
 if not rows:
     rows = [r'\multicolumn{8}{l}{\todo{SV-DTC results pending (results\_rev1/main\_sv)}} \\']
 hdr_var = r'\multicolumn{2}{c}{SV, $K{=}5$} & \multicolumn{2}{c}{SV, $K{=}64$}' if have_var else r'\multicolumn{2}{c}{SV-DTC}'
 ncol = 6 if have_var else 4
 wtab('sv', r"""\begin{table}[t]
 \centering
-\caption{\sys against the support-vertex dynamic transitive closure (SV) of~\cite{varuni2026icact}, reimplemented with $K$ highest-degree group support vertices and a BFS fallback that is aware of resource ancestors. Check $\mu$s; FB: share of checks answered by the fallback; FA: false allows of the faster variant under Definition~\ref{def:allow}; --: not run (time and memory budget).}
+\caption{\sys against the support-vertex dynamic transitive closure (SV) of~\cite{varuni2026icact}, reimplemented with the $K$ highest-degree groups as support vertices and an ancestor-aware BFS fallback. Check $\mu$s; FB: share of checks answered by the fallback; FA: false allows of the faster variant under Definition~\ref{def:allow}; --: not run (time and memory budget). Fastest check in bold, second underlined.}
 \label{tab:sv}
 \footnotesize
 \setlength{\tabcolsep}{2.4pt}
@@ -1387,7 +1423,8 @@ for k in REAL:
         rs = realm[v]; info = rs[0][1]; m = meta(v)
         bq, aq = mean_of(rs, 'BFS'), mean_of(rs, 'AZX')
         ao_ = f(mean_of(abl[v], 'AZX-NODEG') / mean_of(abl[v], 'AZX')) + r'$\times$' if v in abl else '--'
-        rows.append(f"{name(v)} & {m.get('depth_max', '--')} & {f(info.get('closure'))} & {f(info.get('hubs'))} & {f(bq)} & {f(aq)} & "
+        rk = mark('real', v, {'B': f(bq), 'F': f(aq)}, 'BF')
+        rows.append(f"{name(v)} & {m.get('depth_max', '--')} & {f(info.get('closure'))} & {f(info.get('hubs'))} & {rk['B']} & {rk['F']} & "
                     f"{f(bq / aq)}$\\times$ & {ao_} & {f(mean_of(rs, 'AZX', 'u_mean_us'))} & {fi(sum(int(r['AZX']['false_allow']) for r, _ in rs))} \\\\")
     if k in deg:
         rs = deg[k]; bq, aq = mean_of(rs, 'BFS'), mean_of(rs, 'AZX')
@@ -1397,7 +1434,7 @@ if not rows:
     rows = [r'\multicolumn{10}{l}{\todo{real hierarchies pending}} \\']
 wtab('real', r"""\begin{table}[t]
 \centering
-\caption{Real nesting hierarchies (3 seeds""" + (', ' + ', '.join(f'{name(d)}: {SHORT[d]}' for d in SHORT if d.startswith('real')) if any(d.startswith('real') for d in SHORT) else '') + r"""; mean $\mu$s). Depth: longest nesting chain; Upd.: mean $\mu$s per update; FA: false allows of \sys. $^{m}$: users with at least four memberships get a personal group, which materialises their label (same allow set). $-\deg$: check time when the probe/scan test omits $\deg^+(u)$, relative to \sys in the same process (Section~\ref{sec:exp-real}).}
+\caption{Real nesting hierarchies (3 seeds""" + (', ' + ', '.join(f'{name(d)}: {SHORT[d]}' for d in SHORT if d.startswith('real')) if any(d.startswith('real') for d in SHORT) else '') + r"""; mean $\mu$s). Depth: longest nesting chain; Upd.: mean $\mu$s per update; FA: false allows of \sys. $^{m}$: users with at least four memberships get a personal group, which materialises their label (same allow set). $-\deg$: check time when the probe/scan test omits $\deg^+(u)$, relative to \sys in the same process. Faster method in bold.}
 \label{tab:real}
 \footnotesize
 \setlength{\tabcolsep}{2.6pt}
@@ -1410,6 +1447,28 @@ Hierarchy & Depth & Clos. & Hubs & BFS & FLIX & $\frac{\text{BFS}}{\text{FLIX}}$
 \end{tabular}
 \end{table}
 """)
+
+# standing of FLIX in every marked table (second author, 11-10): macros for the text and a summary file
+section()
+KF = {'latency': 'AZX', 'fresh': 'AZX', 'heavy_upd': 'F', 'heavy_size': 'F', 'sv': 'AZX', 'real': 'F', 'e2e': 'F',
+      'ratio': 'F', 'defer_ack': 'D', 'defer_p99': 'D', 'defer_fa': 'D'}
+WORD = {'latency': 'Lat', 'fresh': 'Fresh', 'heavy_upd': 'Upd', 'heavy_size': 'Size', 'sv': 'Sv', 'real': 'Real', 'e2e': 'Etoe',
+        'ratio': 'Ratio', 'defer_ack': 'DefAck', 'defer_p99': 'DefPnn', 'defer_fa': 'DefFa'}
+with open(f'{REV}/summary/ranks.tsv', 'w') as fh:
+    fh.write('table\tkey\tbest\tsecond\trows\tnot_best\n')
+    for t, k in KF.items():
+        b, s2, n = standing(t, k)
+        nb = [str(rw) for (tt, rw, kk), r in RANKS.items() if tt == t and kk == k and r > 0]
+        fh.write(f'{t}\t{k}\t{b}\t{s2}\t{n}\t{"; ".join(nb)}\n')
+        mac(f'Rank{WORD[t]}Best', str(b)); mac(f'Rank{WORD[t]}Second', str(s2)); mac(f'Rank{WORD[t]}Rows', str(n))
+
+# losses named in the text with their cause (latency: Orkut, Friendster; update cost: largest gap to the cheapest)
+_lat = {d: {m: mean_of(main.get(d) or srv.get(d), m) for m in ['AZX', 'CLOSURE', 'BFS', 'SPICE-FC']} for d in ['orkut', 'friendster'] if d in srv}
+if 'orkut' in _lat:
+    mac('LatOrkutGrpGain', f(_lat['orkut']['AZX'] / _lat['orkut']['CLOSURE']))
+if 'friendster' in _lat:
+    mac('LatFriendSpread', f'{100 * (max(_lat["friendster"].values()) / min(_lat["friendster"].values()) - 1):.0f}')
+mac('LatNotTopTwo', ', '.join(name(d) for (t, d, k), r in sorted(RANKS.items(), key=lambda x: str(x[0])) if t == 'latency' and k == 'AZX' and r > 1))
 
 # ================================================================== figures
 import matplotlib
@@ -1474,6 +1533,15 @@ pass  # cache-window figure dropped (round 3); finding stated in text
 plt.close(fig)
 
 exec(open(f'{ROOT}/code/paper_fig1.py').read())
+
+# the table ranks are only known after the tables are written: write numbers.tex and its sources again with them
+with open(f'{PAPER}/numbers.tex', 'w') as fh:
+    fh.write('% generated by code/paper_facts.py -- do not edit\n')
+    for k in sorted(M):
+        fh.write(f'\\newcommand{{\\{k}}}{{{M[k]}\\xspace}}\n')
+with open(f'{PAPER}/numbers_sources.txt', 'w') as fh:
+    for k in sorted(M):
+        fh.write(f'{k}\t{M[k]}\t{"; ".join(SRC[k])}\n')
 
 # placeholders (\todo) only when some input is missing: the definition goes at the top of numbers.tex then,
 # so a complete build carries no draft macro at all
