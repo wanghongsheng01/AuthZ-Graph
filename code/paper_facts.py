@@ -1205,7 +1205,7 @@ if not blocks[3]:
     blocks[3] = [r'\multicolumn{9}{l}{\todo{server-scale datasets pending}} \\']
 wtab('datasets', r"""\begin{table*}[t]
 \centering
-\caption{On deep graphs and Wiki-Cat-en a user reaches hundreds to thousands of subjects (Clos.), but \sys indexes only the """ + HUBSHARE + r"""\% that are frontier hubs (Hubs). Subj.: groups, units, roles; Clos., Hubs: means over 1{,}000 users; --: not recorded.}
+\caption{Deep nesting gives users hundreds to thousands of subjects (Clos.), of which \sys indexes only the """ + HUBSHARE + r"""\% that are frontier hubs (Hubs); means over 1{,}000 users. --: not recorded.}
 \label{tab:datasets}
 \footnotesize
 \begin{tabular}{lrrrrrrrr}
@@ -1320,7 +1320,7 @@ rows.append('Best/2nd & ' + ' & '.join(count_cell('heavy_upd', k) for k in 'FGL'
             + ' & '.join(count_cell('heavy_size', k) for k in 'FGL') + r' & & \\')
 wtab('heavy', r"""\begin{table*}[t]
 \centering
-\caption{\sys has the lowest update cost on every deep graph; LCR is cheaper where updates miss its landmarks and smallest, but checks slowly. LCR, 2-hop: stream prefixes; 2-hop is inexact, not ranked.}
+\caption{\sys has the lowest update cost on every deep graph; LCR is cheaper where updates miss its landmarks and smallest, but checks slowly. LCR, 2-hop: stream prefixes; 2-hop (inexact): not ranked.}
 \label{tab:heavy}
 \footnotesize
 \begin{tabular}{lrrrrrrrr}
