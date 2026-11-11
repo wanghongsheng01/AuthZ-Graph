@@ -215,7 +215,8 @@ def mark(table, row, cells, keys, lower=True, second=True, key=None):
     out = dict(cells)
     for k in ok:
         r = vals.index(key(k))
-        RANKS[(table, row, k)] = r
+        # a pair has no underlined second: record the loser as unmarked so the Best/2nd rows match what is printed
+        RANKS[(table, row, k)] = r if (r == 0 or len(ok) > 2) else 2
         if r == 0:
             out[k] = r'\textbf{' + cells[k] + '}'
         elif r == 1 and second and len(ok) > 2:
@@ -224,6 +225,10 @@ def mark(table, row, cells, keys, lower=True, second=True, key=None):
 def standing(table, k):
     rs = [r for (t, _, kk), r in RANKS.items() if t == table and kk == k]
     return sum(r == 0 for r in rs), sum(r == 1 for r in rs), len(rs)
+def count_cell(table, k):
+    """'best/second' count of one column for the Best/2nd row (second author, 11-11: standing visible in the table)."""
+    b, s2, n = standing(table, k)
+    return f'{b}/{s2}' if n else ''
 
 
 TQ = {2: 12.706, 3: 4.303, 4: 3.182, 5: 2.776}   # two-sided 95% t quantiles, df = n - 1
@@ -744,15 +749,15 @@ if not rows:
     rows = [r'\multicolumn{9}{l}{\todo{end-to-end inputs pending}} \\']
 wtab('e2e', r"""\begin{table}[t]
 \centering
-\caption{End-to-end work per update batch of $q$ checks and one write: ratio of total BFS time to total \sys time ($q\cdot\text{check}+\text{update}$, means of the main runs). $u$: \sys mean update cost ($\mu$s); $q^*$: break-even checks per update (BFS updates cost $<$0.1\,$\mu$s). Faster check in bold.}
+\caption{\sys does less total work than BFS once an update is followed by more than $q^*$ checks. $u$: \sys update cost; Check: mean check cost ($\mu$s, faster in bold); $q{=}\cdot$: BFS over \sys time for $q$ checks plus one update.}
 \label{tab:e2e}
 \footnotesize
 \setlength{\tabcolsep}{2.2pt}
 \begin{tabular}{lrrrrrrrr}
 \toprule
- & & \multicolumn{2}{c}{Check} & \multicolumn{4}{c}{BFS/\sys total, $q=$} & \\
+ & & \multicolumn{2}{c}{Check} & \multicolumn{4}{c}{BFS/\sys total work} & \\
 \cmidrule(lr){3-4}\cmidrule(lr){5-8}
-Data & $u$ & FLIX & BFS & 1 & 10 & 100 & 1000 & $q^*$ \\
+Data & $u$ & FLIX & BFS & $q{=}1$ & $q{=}10$ & $q{=}10^2$ & $q{=}10^3$ & $q^*$ \\
 \midrule
 """ + '\n'.join(rows) + r"""
 \bottomrule
@@ -1170,11 +1175,14 @@ def ds_row(d, rs_info):
     info = rs_info
     if m.get('partial'):
         return (f"{name(d)} & {fi(m['n'])} & {fi(m['m'])} & {fi(m['users'])} & {fi(m['subjects']) if m.get('subjects') else '--'} & -- & -- & "
-                f"{fi(m['updates'])} & {f(info.get('closure'))} & {f(info.get('hubs'))} \\\\")
+                f"{fi(m['updates'])} & {fd(info.get('closure'), 1)} & {fd(info.get('hubs'), 1)} \\\\")
     return (f"{name(d)} & {fi(m['n'])} & {fi(m['m'])} & {fi(m['users'])} & {fi(int(m['groups']) + int(m['roles']))} & "
-            f"{fi(m['deny_edges'])} & {fi(m['cond_edges'])} & {fi(m['updates'])} & {f(info.get('closure'))} & {f(info.get('hubs'))} \\\\")
+            f"{fi(m['deny_edges'])} & {fi(m['cond_edges'])} & {fi(m['updates'])} & {fd(info.get('closure'), 1)} & {fd(info.get('hubs'), 1)} \\\\")
 
 
+_hs = [i.get('hubs') / i.get('closure') for d in DEEP + ['deep1m_L12', 'deep1m_L16', 'real_enwiki']
+       for i in [((main.get(d) or realm.get(d) or srv.get(d) or [({}, {})])[0][1])] if i.get('closure')]
+HUBSHARE = f'{100 * min(_hs):.0f}--{100 * max(_hs):.0f}'
 blocks = []
 for group in [SHALLOW, DEEP, [k for k in REAL if k in realm], [k for k in SERVER if k in srv]]:
     rows = []
@@ -1189,9 +1197,9 @@ if not blocks[3]:
     blocks[3] = [r'\multicolumn{10}{l}{\todo{server-scale datasets pending}} \\']
 wtab('datasets', r"""\begin{table*}[t]
 \centering
-\caption{Datasets: shallow, deep synthetic, real nesting hierarchies, and server-scale graphs. ``Subj.'' counts groups, organisational units and roles; ``Clos.'' is the mean unconditional subject closure of a user, and ``Hubs'' the mean number of frontier hubs it reaches (1,000 sampled users). --: not recorded by the generator run.}
+\caption{On deep graphs and Wiki-Cat-en a user reaches hundreds to thousands of subjects (Clos.), of which only """ + HUBSHARE + r"""\% are frontier hubs (Hubs). Subj.: groups, units and roles; Clos., Hubs: means over 1{,}000 sampled users; --: not recorded.}
 \label{tab:datasets}
-\small
+\footnotesize
 \begin{tabular}{lrrrrrrrrr}
 \toprule
 Dataset & $|V|$ & $|E|$ & Users & Subj. & Deny & Cond. & Updates & Clos. & Hubs \\
@@ -1216,7 +1224,8 @@ for group in [SHALLOW, DEEP, [d for d in SERVER if d in srv]]:
         rr = vals['BFS'] / vals['AZX']
         rows.append(f"{name(d)} & " + ' & '.join(cells) + f" & {fd(rr)}$\\times$ \\\\")
     rows.append(r'\midrule')
-rows = rows[:-1]
+rows[-1] = r'\midrule'
+rows.append('Best/2nd & ' + ' & '.join(count_cell('latency', m) if m != 'SPICE-ML100' else '--' for m in FAST) + r' & \\')
 ci = {}
 for d in DATA:
     v = [r['AZX']['q_mean_us'] for r, _ in main[d]]
@@ -1226,11 +1235,13 @@ hi = [d for d in ci if ci[d] > 0.05]
 ci_txt = '95\\% $t$-based CI of the \\sys mean within {:.0f}\\% of the mean'.format(max(100 * ci[d] for d in ci if ci[d] <= 0.05))
 if hi:
     ci_txt += ', up to {:.0f}\\% on {}'.format(max(100 * ci[d] for d in hi), ', '.join(name(d) for d in hi))
+mac('LatCIMax', f'{max(100 * x for x in ci.values()):.0f}')
 short_main = [name(d) for d in DATA if d in SHORT]
+assert not short_main, short_main   # the setup text states 3 seeds for every graph of the first two blocks
 seed_note = ('; ' + ', '.join(f'{name(d)}: {SHORT[d]} seeds' for d in DATA if d in SHORT) + ' (a run was killed)') if short_main else ''
 wtab('latency', r"""\begin{table}[t]
 \centering
-\caption{Mean check latency ($\mu$s; batch-timed; 3 seeds, 1 for SYN-1M, LJ and the server-scale graphs in the last block""" + seed_note + '; ' + ci_txt + r"""). Fastest exact method in bold, second underlined; C-ML is not exact (Table~\ref{tab:fresh}).}
+\caption{\sys is the fastest exact method on \RankLatBest of \RankLatRows graphs, and its lead over BFS grows with nesting depth. Mean check latency ($\mu$s); C-ML is not exact (Table~\ref{tab:fresh}) and not ranked.}
 \label{tab:latency}
 \small
 \setlength{\tabcolsep}{3.2pt}
@@ -1260,7 +1271,7 @@ for d in DATA:
     rows.append(f"{name(d)} & {fi(q)} & " + ' & '.join(mk[m] for m in FM + ['PLL']) + r' \\')
 wtab('fresh', r"""\begin{table}[t]
 \centering
-\caption{False allows / false denies against the oracle, all checks of all seeds. 2-hop: false allows only, on the shorter heavy runs (\PLLnq checks; not ranked). Bold, underlined: fewest, second-fewest errors (false allows first).}
+\caption{\sys is exact on every graph, and \sysd never returns a false allow; C-ML, Lag and 2-hop do. Entries: false allows/denies (2-hop: false allows on shorter runs, not ranked).}
 \label{tab:fresh}
 \footnotesize
 \setlength{\tabcolsep}{1.6pt}
@@ -1270,6 +1281,7 @@ Dataset & Checks & FLIX & C-ML & FLIX-D & Lag & 2-hop \\
 \midrule
 """ + '\n'.join(rows) + r"""
 \midrule
+Best/2nd & & """ + ' & '.join(count_cell('fresh', m) for m in FM) + r""" & \\
 """ + (lambda mk: f"Total & {fi(nq)} & {mk['AZX']} & {mk['SPICE-ML100']} & {mk['AZX-DEFER-SAFE']} & {mk['AZX-DEFER-NAIVE']} & {fi(sum(x['false_allow'] for _, x in plfa))} \\\\")(mark('fresh_total', 'all', {m: f"{fi(tot[m][0])}/{fi(tot[m][1])}" for m in FM}, FM, key=lambda m: tuple(tot[m]))) + r"""
 \bottomrule
 \end{tabular}
@@ -1296,12 +1308,13 @@ for group in [SHALLOW, DEEP, [d for d in SERVER if d in heavy]]:
         rows.append(f"{name(d)} & {uc['F']} & {uc['G']} & {uc['L']} & {sz['F']} & {sz['G']} & {sz['L']} & "
                     f"{cell(h,'PLL-noDeny','index_MB')} & {cell(h,'LCR-LI','q_mean_us')} \\\\")
     rows.append(r'\midrule')
-rows = rows[:-1]
+rows.append('Best/2nd & ' + ' & '.join(count_cell('heavy_upd', k) for k in 'FGL') + ' & '
+            + ' & '.join(count_cell('heavy_size', k) for k in 'FGL') + r' & & \\')
 wtab('heavy', r"""\begin{table*}[t]
 \centering
-\caption{Update cost (mean $\mu$s per update) and index size (MB). \sys and GrpClosure (both columns): full streams of the main runs (Table~\ref{tab:latency}). LCR and the 2-hop index (PLL) are measured on a prefix of each stream (1{,}000 updates; 100 on DEEP-12/16, SYN-1M, LJ and the server-scale graphs); TC is compared in Section~\ref{sec:exp-update} and Fig.~\ref{fig:update}. One PLL rebuild costs its build time (Sec.~\ref{sec:exp-update}). LCR check: mean $\mu$s per check on the prefix. Bold, underlined: lowest, second-lowest update cost and exact index size (2-hop is not exact).}
+\caption{\sys has the lowest update cost on every deep graph; GrpClosure and LCR are cheaper on some shallow graphs, and LCR has the smallest index but slow checks. LCR, 2-hop: stream prefixes; 2-hop is not exact and not ranked.}
 \label{tab:heavy}
-\small
+\footnotesize
 \begin{tabular}{lrrrrrrrr}
 \toprule
  & \multicolumn{3}{c}{Update cost ($\mu$s)} & \multicolumn{4}{c}{Index size (MB)} & LCR \\
@@ -1322,32 +1335,35 @@ for ds in ['ent', 'syn100k', 'amzn']:
             continue
         r = df[(ds, B)][0]
         s, n, a = r['AZX-DEFER-SAFE'], r.get('AZX-DEFER-NAIVE'), r['AZX']
-        am = mark('defer_ack', (ds, B), {'D': fd(ack(s, 'mean')), 'S': fd(a['u_mean_us'])}, 'DS')
-        a9 = mark('defer_p99', (ds, B), {'D': fd(ack(s, 'p99')), 'S': fd(a['u_p99_us'])}, 'DS')
+        # Lag's acknowledgment latency (same process) ranks with FLIX-D and synchronous FLIX (second author, 11-11)
+        am = mark('defer_ack', (ds, B), {'D': fd(ack(s, 'mean')), 'S': fd(a['u_mean_us']), 'L': fd(ack(n, 'mean')) if n else '--'}, 'DSL')
+        a9 = mark('defer_p99', (ds, B), {'D': fd(ack(s, 'p99'), 1), 'S': fd(a['u_p99_us'], 1)}, 'DS')
         fa = mark('defer_fa', (ds, B), {'D': f"{fi(s['false_allow'])}/{fi(s['false_deny'])}", 'L': fi(n['false_allow']) if n else '--'}, 'DL',
                   key=lambda k: s['false_allow'] if k == 'D' else n['false_allow'])
-        rows.append(f"{name(ds)} & $B{{=}}{B}$ & {pct(share(s))}\\% & {am['D']} & {a9['D']} & {am['S']} & {a9['S']} & {fa['D']} & {fa['L']} \\\\")
+        rows.append(f"{name(ds)} & {B} & {pct(share(s))}\\% & {am['D']} & {a9['D']} & {fa['D']} & {am['S']} & {a9['S']} & {am['L']} & {fa['L']} \\\\")
 rows.append(r'\midrule')
 if ap:
     for (ds, c), r in ap.items():
         s, a = r['AZX-DEFER-SAFE'], r['AZX']
-        am = mark('defer_ack', (ds, c), {'D': fd(ack(s, 'mean')), 'S': fd(a['u_mean_us'])}, 'DS')
-        a9 = mark('defer_p99', (ds, c), {'D': fd(ack(s, 'p99')), 'S': fd(r['AZX']['x'].get('ack_p99', a['u_p99_us']))}, 'DS')
-        rows.append(f"{name(ds)} & {c}\\,$\\mu$s & {pct(share(s))}\\% & {am['D']} & {a9['D']} & {am['S']} & {a9['S']} & "
-                    f"{fi(s['false_allow'])}/{fi(s['false_deny'])} & -- \\\\")
+        am = mark('defer_ack', (ds, c), {'D': fd(ack(s, 'mean')), 'S': fd(a['u_mean_us']), 'L': '--'}, 'DSL')
+        a9 = mark('defer_p99', (ds, c), {'D': fd(ack(s, 'p99'), 1), 'S': fd(r['AZX']['x'].get('ack_p99', a['u_p99_us']), 1)}, 'DS')
+        rows.append(f"{name(ds)} & +{c} & {pct(share(s))}\\% & {am['D']} & {a9['D']} & {fi(s['false_allow'])}/{fi(s['false_deny'])} & "
+                    f"{am['S']} & {a9['S']} & -- & -- \\\\")
 else:
-    rows.append(r'\multicolumn{9}{l}{\todo{expensive-apply runs pending (results\_rev1/sweep\_apply)}} \\')
+    rows.append(r'\multicolumn{10}{l}{\todo{expensive-apply runs pending (results\_rev1/sweep\_apply)}} \\')
+rows += [r'\midrule', 'Best/2nd & & & ' + ' & '.join(count_cell(t, k) for t, k in [('defer_ack', 'D'), ('defer_p99', 'D'), ('defer_fa', 'D'),
+         ('defer_ack', 'S'), ('defer_p99', 'S'), ('defer_ack', 'L'), ('defer_fa', 'L')]) + r' \\']
 wtab('defer', r"""\begin{table}[t]
 \centering
-\caption{Deferred maintenance. Top: flush threshold $B$ (5{,}000 updates). Bottom: each label propagation costs 10 or 100\,$\mu$s more (a replica round trip), with background threshold flushes ($B{=}64$). Ack: $\mu$s until a write is acknowledged, flushes included. Def.: share of deferred updates; FA/FD: false allows / denies of FLIX-D; Lag: false allows. Bold: the better of FLIX-D and FLIX (Ack, p99) and of FLIX-D and Lag (FA).}
+\caption{\sysd never returns a false allow, unlike Lag, and acknowledges writes faster than synchronous \sys only when propagation is expensive (bottom). Set.: $B$ (top) or $\mu$s added per propagation; Def.: deferred share; Ack, p99: mean, 99th-percentile acknowledgment $\mu$s.}
 \label{tab:defer}
 \footnotesize
-\setlength{\tabcolsep}{1.8pt}
-\begin{tabular}{llrrrrrrr}
+\setlength{\tabcolsep}{2.0pt}
+\begin{tabular}{lrrrrrrrrr}
 \toprule
- & & \multicolumn{3}{c}{FLIX-D} & \multicolumn{2}{c}{FLIX (sync)} & & \\
-\cmidrule(lr){3-5}\cmidrule(lr){6-7}
-Data & Setting & Def. & Ack & p99 & Ack & p99 & FA/FD & Lag \\
+ & & \multicolumn{4}{c}{FLIX-D} & \multicolumn{2}{c}{FLIX (sync)} & \multicolumn{2}{c}{Lag} \\
+\cmidrule(lr){3-6}\cmidrule(lr){7-8}\cmidrule(lr){9-10}
+Data & Set. & Def. & Ack & p99 & FA/FD & Ack & p99 & Ack & FA \\
 \midrule
 """ + '\n'.join(rows) + r"""
 \bottomrule
@@ -1368,13 +1384,16 @@ for ds in ['ent', 'syn100k', 'deep_L16', 'amzn']:
                                      'L': fi(r['AZX-DEFER-NAIVE']['false_allow']) if 'AZX-DEFER-NAIVE' in r else '--'}, 'FCL')
         UPD.setdefault(q, set()).add(nu)
         rows.append(f"{name(ds)} & {q} & {fi(rev) if rev is not None else '--'} & {pct(c['x'].get('hit_rate', 0))}\\% & {fk['F']} & {fk['C']} & "
-                    f"{f(c['false_allow'] / max(1, rev)) if rev else '--'} & {fk['L']} \\\\")
-assert all(len(v) == 1 for v in UPD.values()), UPD   # the caption states one update count per q
+                    f"{fd(c['false_allow'] / max(1, rev)) if rev is not None else '--'} & {fk['L']} \\\\")
+assert all(len(v) == 1 for v in UPD.values()), UPD   # the text states one update count per q
+for q, v in UPD.items():
+    mac({10: 'RatioUpdTen', 100: 'RatioUpdHundred', 1000: 'RatioUpdThousand'}[q], fi(next(iter(v))))
+rows += [r'\midrule', 'Best/2nd & & & & ' + count_cell('ratio', 'F') + ' & ' + count_cell('ratio', 'C') + ' & & ' + count_cell('ratio', 'L') + r' \\']
 if not rows:
     rows = [r'\multicolumn{8}{l}{\todo{read/write sweep pending (results\_rev1/sweep\_ratio)}} \\']
 wtab('ratio', r"""\begin{table}[t]
 \centering
-\caption{Read/write ratio: checks per update $q$, with """ + ', '.join(f'{fi(next(iter(v)))}' for q, v in sorted(UPD.items())) + r""" updates for $q={}$10, 100, 1\,000. Del./deny: grant and membership deletions plus deny insertions (revoking subject insertions are not counted). C-ML: Zanzibar-style cache with a window of 100 writes (5\,s at \WriteRate writes/s); FA/del.: its false allows per such update. Fewest false allows in bold, second underlined.}
+\caption{\sys is exact at every read/write ratio; the cache (C-ML) errs more per revoking update (Del./deny) at $q\ge 100$ than at $q{=}10$. $q$: checks per update; FA/del.: C-ML false allows per revoking update.}
 \label{tab:ratio}
 \footnotesize
 \setlength{\tabcolsep}{2.4pt}
@@ -1401,13 +1420,16 @@ for d, r in sv.items():
             cells.append('-- & --')
     b = min([v for v in SVV if v in r], key=lambda v: r[v]['q_mean_us'])
     rows.append(f"{name(d)} & {mk['AZX']} & {mk['BFS']} & " + ' & '.join(cells) + f" & {fi(r[b]['false_allow'])} \\\\")
+if rows:
+    rows += [r'\midrule', 'Best/2nd & ' + count_cell('sv', 'AZX') + ' & ' + count_cell('sv', 'BFS') + ' & '
+             + ' & '.join(count_cell('sv', v) + ' & ' for v in (SVV[1:] if have_var else SVV[:1])) + r' \\']
 if not rows:
     rows = [r'\multicolumn{8}{l}{\todo{SV-DTC results pending (results\_rev1/main\_sv)}} \\']
 hdr_var = r'\multicolumn{2}{c}{SV, $K{=}5$} & \multicolumn{2}{c}{SV, $K{=}64$}' if have_var else r'\multicolumn{2}{c}{SV-DTC}'
 ncol = 6 if have_var else 4
 wtab('sv', r"""\begin{table}[t]
 \centering
-\caption{\sys against the support-vertex dynamic transitive closure (SV) of~\cite{varuni2026icact}, reimplemented with the $K$ highest-degree groups as support vertices and an ancestor-aware BFS fallback. Check $\mu$s; FB: share of checks answered by the fallback; FA: false allows of the faster variant under Definition~\ref{def:allow}; --: not run (time and memory budget). Fastest check in bold, second underlined.}
+\caption{\sys is faster than SV on every graph, because SV answers \SVFallbackMin--\SVFallbackMax\% of the checks by its search fallback (FB); SV also returns false allows (FA, faster variant). Check: mean $\mu$s; --: not run.}
 \label{tab:sv}
 \footnotesize
 \setlength{\tabcolsep}{2.4pt}
@@ -1425,34 +1447,49 @@ Data & FLIX & BFS & """ + ('Check & FB & Check & FB' if have_var else 'Check & F
 
 # real hierarchies
 rows = []
-REALFA = []
+REALFA, REALABL, REALSPD = [], [], []
 for k in REAL:
     for v in (k + '_m4', k):
         if v not in realm:
             continue
         rs = realm[v]; info = rs[0][1]; m = meta(v)
-        bq, aq = mean_of(rs, 'BFS'), mean_of(rs, 'AZX')
+        bq, aq, gq = mean_of(rs, 'BFS'), mean_of(rs, 'AZX'), mean_of(rs, 'CLOSURE')
         ao_ = fd(mean_of(abl[v], 'AZX-NODEG') / mean_of(abl[v], 'AZX')) + r'$\times$' if v in abl else '--'
-        rk = mark('real', v, {'B': fd(bq), 'F': fd(aq)}, 'BF')
+        if v in abl:
+            REALABL.append(mean_of(abl[v], 'AZX-NODEG') / mean_of(abl[v], 'AZX'))
+        REALSPD.append(bq / aq)
+        # GrpClosure ran in the same process (second author, 11-11: a ranking of three, not a pair)
+        rk = mark('real', v, {'B': fd(bq), 'G': fd(gq), 'F': fd(aq)}, 'BGF')
         REALFA.append(sum(int(r['AZX']['false_allow']) for r, _ in rs))   # all zero: stated in the caption, no column
-        rows.append(f"{name(v)} & {m.get('depth_max', '--')} & {fd(info.get('closure'), 1)} & {fd(info.get('hubs'), 1)} & {rk['B']} & {rk['F']} & "
+        rows.append(f"{name(v)} & {m.get('depth_max', '--')} & {fd(info.get('closure'), 1)} & {rk['B']} & {rk['G']} & {rk['F']} & "
                     f"{fd(bq / aq)}$\\times$ & {ao_} & {fd(mean_of(rs, 'AZX', 'u_mean_us'), 1)} \\\\")
     if k in deg:
         rs = deg[k]; bq, aq = mean_of(rs, 'BFS'), mean_of(rs, 'AZX')
         rows.append(f"{name(k)}$^{{d}}$ & \\multicolumn{{3}}{{r}}{{\\emph{{original test:}} {f(spd(ctl[k]))}$\\times$}} & {f(bq)} & {f(aq)} & {f(bq / aq)}$\\times$ & -- & "
                     f"{fi(sum(int(r['AZX']['false_allow']) for r, _ in rs))} \\\\")
-assert not any(REALFA), REALFA   # the caption states that FLIX returned no false allow on any hierarchy
+assert not any(d.startswith('real') for d in SHORT), SHORT   # the setup text states 3 seeds
+assert not any(REALFA), REALFA   # the text states that FLIX returned no false allow on any hierarchy
+gm = lambda v: math.exp(stt.mean(math.log(x) for x in v))
+# GrpClosure on Wiki-Cat-en was killed (exit 137); its peak memory is stated in the caption
+_oom = open(f'{REV}/oom_attempts/real_enwiki_closure_s1.txt').read()
+assert '# exit=137' in _oom and 'AZX,CLOSURE' in _oom
+OOMGB = int(re.search(r'Maximum resident set size \(kbytes\): (\d+)', _oom).group(1)) / 1e6
+CUR.add(f'{TREE}/oom_attempts')
+if rows:
+    rows += [r'\midrule', f"Geo.~mean & & & & & & {fd(gm(REALSPD))}$\\times$ & {fd(gm(REALABL))}$\\times$ & \\\\",
+             'Best/2nd & & & ' + ' & '.join(count_cell('real', k) for k in 'BGF') + r' & & & \\']
+    mac('RealSpdGeo', fd(gm(REALSPD))); mac('RealAblGeo', fd(gm(REALABL)))
 if not rows:
     rows = [r'\multicolumn{9}{l}{\todo{real hierarchies pending}} \\']
 wtab('real', r"""\begin{table}[t]
 \centering
-\caption{Real nesting hierarchies (3 seeds""" + (', ' + ', '.join(f'{name(d)}: {SHORT[d]}' for d in SHORT if d.startswith('real')) if any(d.startswith('real') for d in SHORT) else '') + r"""; mean $\mu$s). Depth: longest nesting chain; Upd.: mean $\mu$s per update. \sys returned no false allow on any hierarchy. $^{m}$: users with at least four memberships get a personal group, which materialises their label (same allow set). $-\deg$: check time when the probe/scan test omits $\deg^+(u)$, relative to \sys in the same process. Faster method in bold.}
+\caption{\sys is the fastest method on every real hierarchy, and its gain over BFS grows with the closure. Mean $\mu$s per check; Upd.: per update; $^{m}$: personal labels; $-\deg$: ablation of the mode test; --: killed at """ + f'{OOMGB:.0f}' + r"""\,GB.}
 \label{tab:real}
 \footnotesize
 \setlength{\tabcolsep}{2.1pt}
 \begin{tabular}{lrrrrrrrr}
 \toprule
-Hierarchy & Depth & Clos. & Hubs & BFS & FLIX & $\frac{\text{BFS}}{\text{FLIX}}$ & $-\deg$ & Upd. \\
+Hierarchy & Depth & Clos. & BFS & GrpCl & FLIX & $\frac{\text{BFS}}{\text{FLIX}}$ & $-\deg$ & Upd. \\
 \midrule
 """ + '\n'.join(rows) + r"""
 \bottomrule
@@ -1480,6 +1517,29 @@ if 'orkut' in _lat:
     mac('LatOrkutGrpGain', f(_lat['orkut']['AZX'] / _lat['orkut']['CLOSURE']))
 if 'friendster' in _lat:
     mac('LatFriendSpread', f'{100 * (max(_lat["friendster"].values()) / min(_lat["friendster"].values()) - 1):.0f}')
+# every baseline that wins a row is named in the text with its cause (second author, 11-11)
+mrow_u = lambda d, m: (upd.get(d) or srv[d][0][0])[m]['u_mean_us']
+meta_clos = lambda d: (main.get(d) or srv.get(d))[0][1].get('closure')
+_ljf = {m: mean_of(srv['lj_full'], m) for m in ['AZX', 'SPICE-FC']} if 'lj_full' in srv else None
+if _ljf:
+    mac('LatLJfullGap', f"{100 * (_ljf['AZX'] / _ljf['SPICE-FC'] - 1):.0f}")
+_gw = [(d, mean_of(main.get(d) or srv.get(d), 'AZX') - mean_of(main.get(d) or srv.get(d), 'CLOSURE'))
+       for (t, d, k), r in RANKS.items() if t == 'latency' and k == 'CLOSURE' and r == 0]
+mac('LatGrpWinList', ' and '.join(name(d) for d, _ in _gw))
+_uw = [(d, mrow_u(d, 'AZX') - mrow_u(d, 'CLOSURE')) for (t, d, k) in RANKS if t == 'heavy_upd' and k == 'G'
+       and pval(fd(mrow_u(d, 'CLOSURE'))) < pval(fd(mrow_u(d, 'AZX')))]   # strictly cheaper as printed
+assert all(d in SHALLOW + SERVER for d, _ in _uw), _uw   # the text says: shallow graphs only
+mac('UpdGrpWinCount', str(len(_uw)))
+mac('UpdGrpWinGapMin', fd(min(g for _, g in _uw))); mac('UpdGrpWinGapMax', fd(max(g for _, g in _uw)))
+mac('UpdGrpWinGapMaxName', name(max(_uw, key=lambda x: x[1])[0]))
+mac('RankSizeLCRBest', str(standing('heavy_size', 'L')[0]))
+_sb = [d for (t, d, k), r in RANKS.items() if t == 'sv' and k == 'BFS' and r == 0]
+mac('SvBfsWinList', ' and '.join(name(d) for d in _sb))
+mac('SvBfsWinGap', fd(max(sv[d]['AZX']['q_mean_us'] - sv[d]['BFS']['q_mean_us'] for d in _sb)))
+mac('SvBfsWinClosMax', fd(max(meta_clos(d) for d in _sb), 1))
+_lag = [(ack(df[k][0]['AZX-DEFER-NAIVE'], 'mean'), ack(df[k][0]['AZX-DEFER-SAFE'], 'mean')) for k in df if k[1] in (16, 64, 1024)]
+assert all(l < s_ for l, s_ in _lag), _lag   # the text states that Lag acknowledges faster than FLIX-D in every top row
+mac('LagAckMeanSyn', fd(ack(df[('syn100k', 64)][0]['AZX-DEFER-NAIVE'], 'mean')))
 mac('LatNotTopTwo', ', '.join(name(d) for (t, d, k), r in sorted(RANKS.items(), key=lambda x: str(x[0])) if t == 'latency' and k == 'AZX' and r > 1))
 
 # ================================================================== figures
@@ -1497,7 +1557,7 @@ C = {'AZX': '#D55E00', 'BFS': '#0072B2', 'CLOSURE': '#009E73', 'TC': '#CC79A7', 
 # depth sweep with 95% CI over seeds
 Ls = sorted(dep)
 xs = [stt.mean(i.get('closure', 0) for _, i in dep[L]) for L in Ls]
-fig, ax = plt.subplots(1, 2, figsize=(3.45, 1.7))
+fig, ax = plt.subplots(1, 2, figsize=(3.45, 1.45))
 for meth in ['BFS', 'CLOSURE', 'AZX']:
     for j, key in enumerate(['q_mean_us', 'u_mean_us']):
         if meth == 'BFS' and j == 1:
@@ -1518,7 +1578,7 @@ plt.close(fig)
 # update cost per dataset (log bars)
 UD = [d for d in DATA if d in heavy]
 x = np.arange(len(UD)); w = 0.2
-fig, ax = plt.subplots(figsize=(3.45, 1.8))
+fig, ax = plt.subplots(figsize=(3.45, 1.5))
 series = [('AZX', lambda d: upd[d]['AZX']['u_mean_us']),
           ('CLOSURE', lambda d: upd[d]['CLOSURE']['u_mean_us']),
           ('TC', lambda d: tc_row(d)['TC']['u_mean_us'] if 'TC' in tc_row(d) else np.nan),
