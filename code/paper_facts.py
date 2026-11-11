@@ -418,10 +418,18 @@ mac('LCRBelowCount', str(len(below)))
 mac('LCRBelowMin', f(below[0][0]) if below else TODO); mac('LCRBelowMax', f(below[-1][0]) if below else TODO)
 mac('LCRBelowList', ', '.join(f'{name(d)} {f(x)}' for x, d in below) if below else TODO)
 mac('LCRUpdRatioMin', f(min(lr))); mac('LCRUpdRatioMax', f(max(lr)))
+# why LCR wins (second author, 11-11): its updates are cheap exactly where no update of the prefix reaches a landmark
+relab = lambda d: int(heavy[d][0]['LCR-LI']['x'].get('relabels', 0))
+nupd = lambda d: int(re.search(r'updates=(\d+)', open(f'{REV}/heavy/{d}.txt').read())[1])
+mac('LCRBelowNames', ', '.join(name(d) for _, d in sorted(below, key=lambda t: (DATA + SERVER + REAL + [k + '_m4' for k in REAL]).index(t[1]))))
+mac('LCRBelowRelabMax', str(max(relab(d) for _, d in below)))
+mac('LCRRelabDBLP', str(relab('dblp'))); mac('LCRUpdDBLP', fd(heavy['dblp'][0]['LCR-LI']['u_mean_us'], 0))
+mac('LCRRelabPerUpdDeepSixteen', f'{relab("deep_L16") / nupd("deep_L16"):.1f}')
 lq = [heavy[d][0]['LCR-LI']['q_mean_us'] / heavy[d][0]['BFS']['q_mean_us'] for d in heavy if 'LCR-LI' in heavy[d][0] and 'BFS' in heavy[d][0]]
 mac('LCRqOverBFSMin', f(min(lq))); mac('LCRqOverBFSMax', f(max(lq)))
 mac('LCRUpdDeepSixteenMs', f(heavy['deep_L16'][0]['LCR-LI']['u_mean_us'] / 1000))
 mac('LCRqDeepSixteen', f(heavy['deep_L16'][0]['LCR-LI']['q_mean_us']))
+mac('LCRFlixqDeepSixteen', f(heavy['deep_L16'][0]['AZX']['q_mean_us']))   # FLIX on the same prefix as LCR
 plfa = [(d, heavy[d][0]['PLL-noDeny']) for d in DATA if d in heavy and 'PLL-noDeny' in heavy[d][0]]
 mac('PLLfaDatasets', str(sum(1 for _, x in plfa if x['false_allow'] > 0))); mac('PLLnDatasets', str(len(plfa)))
 mac('PLLfaTotal', fi(sum(x['false_allow'] for _, x in plfa))); mac('PLLnq', fi(sum(x['queries'] for _, x in plfa)))
@@ -749,7 +757,7 @@ if not rows:
     rows = [r'\multicolumn{9}{l}{\todo{end-to-end inputs pending}} \\']
 wtab('e2e', r"""\begin{table}[t]
 \centering
-\caption{\sys does less total work than BFS once an update is followed by more than $q^*$ checks. $u$: \sys update cost; Check: mean check cost ($\mu$s, faster in bold); $q{=}\cdot$: BFS over \sys time for $q$ checks plus one update.}
+\caption{\sys is cheaper than BFS in total beyond $q^*$ checks per update. $u$, Check: update, check $\mu$s; $q{=}\cdot$: BFS/\sys time of $q$ checks and one update.}
 \label{tab:e2e}
 \footnotesize
 \setlength{\tabcolsep}{2.2pt}
@@ -1175,9 +1183,9 @@ def ds_row(d, rs_info):
     info = rs_info
     if m.get('partial'):
         return (f"{name(d)} & {fi(m['n'])} & {fi(m['m'])} & {fi(m['users'])} & {fi(m['subjects']) if m.get('subjects') else '--'} & -- & -- & "
-                f"{fi(m['updates'])} & {fd(info.get('closure'), 1)} & {fd(info.get('hubs'), 1)} \\\\")
+                f"{fd(info.get('closure'), 1)} & {fd(info.get('hubs'), 1)} \\\\")
     return (f"{name(d)} & {fi(m['n'])} & {fi(m['m'])} & {fi(m['users'])} & {fi(int(m['groups']) + int(m['roles']))} & "
-            f"{fi(m['deny_edges'])} & {fi(m['cond_edges'])} & {fi(m['updates'])} & {fd(info.get('closure'), 1)} & {fd(info.get('hubs'), 1)} \\\\")
+            f"{fi(m['deny_edges'])} & {fi(m['cond_edges'])} & {fd(info.get('closure'), 1)} & {fd(info.get('hubs'), 1)} \\\\")
 
 
 _hs = [i.get('hubs') / i.get('closure') for d in DEEP + ['deep1m_L12', 'deep1m_L16', 'real_enwiki']
@@ -1194,15 +1202,15 @@ for group in [SHALLOW, DEEP, [k for k in REAL if k in realm], [k for k in SERVER
                 rows.append(row)
     blocks.append(rows)
 if not blocks[3]:
-    blocks[3] = [r'\multicolumn{10}{l}{\todo{server-scale datasets pending}} \\']
+    blocks[3] = [r'\multicolumn{9}{l}{\todo{server-scale datasets pending}} \\']
 wtab('datasets', r"""\begin{table*}[t]
 \centering
-\caption{On deep graphs and Wiki-Cat-en a user reaches hundreds to thousands of subjects (Clos.), of which only """ + HUBSHARE + r"""\% are frontier hubs (Hubs). Subj.: groups, units and roles; Clos., Hubs: means over 1{,}000 sampled users; --: not recorded.}
+\caption{On deep graphs and Wiki-Cat-en a user reaches hundreds to thousands of subjects (Clos.), but \sys indexes only the """ + HUBSHARE + r"""\% that are frontier hubs (Hubs). Subj.: groups, units, roles; Clos., Hubs: means over 1{,}000 users; --: not recorded.}
 \label{tab:datasets}
 \footnotesize
-\begin{tabular}{lrrrrrrrrr}
+\begin{tabular}{lrrrrrrrr}
 \toprule
-Dataset & $|V|$ & $|E|$ & Users & Subj. & Deny & Cond. & Updates & Clos. & Hubs \\
+Dataset & $|V|$ & $|E|$ & Users & Subj. & Deny & Cond. & Clos. & Hubs \\
 \midrule
 """ + '\n\\midrule\n'.join('\n'.join(b) for b in blocks if b) + r"""
 \bottomrule
@@ -1241,7 +1249,7 @@ assert not short_main, short_main   # the setup text states 3 seeds for every gr
 seed_note = ('; ' + ', '.join(f'{name(d)}: {SHORT[d]} seeds' for d in DATA if d in SHORT) + ' (a run was killed)') if short_main else ''
 wtab('latency', r"""\begin{table}[t]
 \centering
-\caption{\sys is the fastest exact method on \RankLatBest of \RankLatRows graphs, and its lead over BFS grows with nesting depth. Mean check latency ($\mu$s); C-ML is not exact (Table~\ref{tab:fresh}) and not ranked.}
+\caption{\sys is the fastest exact method on \RankLatBest of \RankLatRows graphs. Mean check latency ($\mu$s); C-ML is not exact (Table~\ref{tab:fresh}), not ranked.}
 \label{tab:latency}
 \small
 \setlength{\tabcolsep}{3.2pt}
@@ -1271,7 +1279,7 @@ for d in DATA:
     rows.append(f"{name(d)} & {fi(q)} & " + ' & '.join(mk[m] for m in FM + ['PLL']) + r' \\')
 wtab('fresh', r"""\begin{table}[t]
 \centering
-\caption{\sys is exact on every graph, and \sysd never returns a false allow; C-ML, Lag and 2-hop do. Entries: false allows/denies (2-hop: false allows on shorter runs, not ranked).}
+\caption{\sys is exact on every graph; \sysd never returns a false allow. False allows/denies (2-hop: false allows, shorter runs, not ranked).}
 \label{tab:fresh}
 \footnotesize
 \setlength{\tabcolsep}{1.6pt}
@@ -1312,7 +1320,7 @@ rows.append('Best/2nd & ' + ' & '.join(count_cell('heavy_upd', k) for k in 'FGL'
             + ' & '.join(count_cell('heavy_size', k) for k in 'FGL') + r' & & \\')
 wtab('heavy', r"""\begin{table*}[t]
 \centering
-\caption{\sys has the lowest update cost on every deep graph; GrpClosure and LCR are cheaper on some shallow graphs, and LCR has the smallest index but slow checks. LCR, 2-hop: stream prefixes; 2-hop is not exact and not ranked.}
+\caption{\sys has the lowest update cost on every deep graph; LCR is cheaper where updates miss its landmarks and smallest, but checks slowly. LCR, 2-hop: stream prefixes; 2-hop is inexact, not ranked.}
 \label{tab:heavy}
 \footnotesize
 \begin{tabular}{lrrrrrrrr}
@@ -1355,7 +1363,7 @@ rows += [r'\midrule', 'Best/2nd & & & ' + ' & '.join(count_cell(t, k) for t, k i
          ('defer_ack', 'S'), ('defer_p99', 'S'), ('defer_ack', 'L'), ('defer_fa', 'L')]) + r' \\']
 wtab('defer', r"""\begin{table}[t]
 \centering
-\caption{\sysd never returns a false allow, unlike Lag, and acknowledges writes faster than synchronous \sys only when propagation is expensive (bottom). Set.: $B$ (top) or $\mu$s added per propagation; Def.: deferred share; Ack, p99: mean, 99th-percentile acknowledgment $\mu$s.}
+\caption{\sysd never returns a false allow, unlike Lag, and acknowledges faster than synchronous \sys only under costly propagation (bottom). Set.: $B$ or added $\mu$s; Def.: deferred share; Ack, p99: acknowledgment $\mu$s.}
 \label{tab:defer}
 \footnotesize
 \setlength{\tabcolsep}{2.0pt}
@@ -1393,7 +1401,7 @@ if not rows:
     rows = [r'\multicolumn{8}{l}{\todo{read/write sweep pending (results\_rev1/sweep\_ratio)}} \\']
 wtab('ratio', r"""\begin{table}[t]
 \centering
-\caption{\sys is exact at every read/write ratio; the cache (C-ML) errs more per revoking update (Del./deny) at $q\ge 100$ than at $q{=}10$. $q$: checks per update; FA/del.: C-ML false allows per revoking update.}
+\caption{\sys is exact at every ratio $q$ of checks per update; C-ML errs more at $q\ge 100$. FA/del.: C-ML false allows per revoking update (Del./deny).}
 \label{tab:ratio}
 \footnotesize
 \setlength{\tabcolsep}{2.4pt}
@@ -1429,7 +1437,7 @@ hdr_var = r'\multicolumn{2}{c}{SV, $K{=}5$} & \multicolumn{2}{c}{SV, $K{=}64$}' 
 ncol = 6 if have_var else 4
 wtab('sv', r"""\begin{table}[t]
 \centering
-\caption{\sys is faster than SV on every graph, because SV answers \SVFallbackMin--\SVFallbackMax\% of the checks by its search fallback (FB); SV also returns false allows (FA, faster variant). Check: mean $\mu$s; --: not run.}
+\caption{\sys is faster than SV on every graph: SV answers \SVFallbackMin--\SVFallbackMax\% of the checks by search (FB) and returns false allows (FA). Check: mean $\mu$s; --: not run.}
 \label{tab:sv}
 \footnotesize
 \setlength{\tabcolsep}{2.4pt}
@@ -1483,7 +1491,7 @@ if not rows:
     rows = [r'\multicolumn{9}{l}{\todo{real hierarchies pending}} \\']
 wtab('real', r"""\begin{table}[t]
 \centering
-\caption{\sys is the fastest method on every real hierarchy, and its gain over BFS grows with the closure. Mean $\mu$s per check; Upd.: per update; $^{m}$: personal labels; $-\deg$: ablation of the mode test; --: killed at """ + f'{OOMGB:.0f}' + r"""\,GB.}
+\caption{\sys is the fastest method on every real hierarchy. Mean $\mu$s per check; Upd.: per update; $^{m}$: personal labels; $-\deg$: mode-test ablation; --: killed at """ + f'{OOMGB:.0f}' + r"""\,GB.}
 \label{tab:real}
 \footnotesize
 \setlength{\tabcolsep}{2.1pt}
@@ -1557,7 +1565,7 @@ C = {'AZX': '#D55E00', 'BFS': '#0072B2', 'CLOSURE': '#009E73', 'TC': '#CC79A7', 
 # depth sweep with 95% CI over seeds
 Ls = sorted(dep)
 xs = [stt.mean(i.get('closure', 0) for _, i in dep[L]) for L in Ls]
-fig, ax = plt.subplots(1, 2, figsize=(3.45, 1.45))
+fig, ax = plt.subplots(1, 2, figsize=(3.45, 1.38))
 for meth in ['BFS', 'CLOSURE', 'AZX']:
     for j, key in enumerate(['q_mean_us', 'u_mean_us']):
         if meth == 'BFS' and j == 1:
@@ -1578,7 +1586,7 @@ plt.close(fig)
 # update cost per dataset (log bars)
 UD = [d for d in DATA if d in heavy]
 x = np.arange(len(UD)); w = 0.2
-fig, ax = plt.subplots(figsize=(3.45, 1.5))
+fig, ax = plt.subplots(figsize=(3.45, 1.42))
 series = [('AZX', lambda d: upd[d]['AZX']['u_mean_us']),
           ('CLOSURE', lambda d: upd[d]['CLOSURE']['u_mean_us']),
           ('TC', lambda d: tc_row(d)['TC']['u_mean_us'] if 'TC' in tc_row(d) else np.nan),
